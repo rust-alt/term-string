@@ -1,0 +1,61 @@
+language: rust
+
+rust:
+  - stable
+  - beta
+  - nightly
+
+os:
+  - linux
+  - osx
+
+env:
+  - BADGE=linux_stable
+  - BADGE=linux_beta
+  - BADGE=linux_nightly
+  - BADGE=osx_stable
+  - BADGE=osx_beta
+  - BADGE=osx_nightly
+  - FEATURES=nightly
+
+matrix:
+  exclude: # exclude everything
+    - rust: stable
+    - rust: beta
+    - rust: nightly
+  include: # include what we want
+    - name: "linux-stable"
+      os: linux
+      rust: stable
+      env: BADGE=linux-stable
+    - name: "linux-beta"
+      os: linux
+      rust: beta
+      env: BADGE=linux-beta
+    - name: "linux-nightly"
+      os: linux
+      rust: nightly
+      env:
+        - BADGE=linux-nightly
+        - FEATURES=nightly
+    - name: "osx-stable"
+      os: osx
+      rust: stable
+      env: BADGE=osx-stable
+    - name: "osx-beta"
+      os: osx
+      rust: beta
+      env: BADGE=osx-beta
+    - name: "osx-nightly"
+      os: osx
+      rust: nightly
+      env:
+        - BADGE=osx-nightly
+        - FEATURES=nightly
+
+sudo: false
+script:
+  - cargo build --all-targets --features "$FEATURES"
+  - cargo test --features "$FEATURES"
+  - cargo doc --no-deps --features "$FEATURES"
+  - cargo run --example test --features "$FEATURES"

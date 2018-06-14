@@ -1,0 +1,12 @@
+[package]
+name = "term-string"
+version = "0.5.0"
+authors = ["Mohammad AlSaleh <CE.Mohammad.AlSaleh@gmail.com>"]
+
+[dependencies]
+term = "0.5"
+isatty = "0.1"
+mashup = "0.1"
+
+[features]
+nightly = [] # unused
