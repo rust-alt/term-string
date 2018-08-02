@@ -1,7 +1,4 @@
-# term-string
-
-[![Travis Build Status](https://api.travis-ci.org/rust-alt/term-string.svg?branch=master)](https://travis-ci.org/rust-alt/term-string)
-[![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/rust-alt/term-string?svg=true&branch=master)](https://ci.appveyor.com/project/MoSal/term-string)
+# term-string [![Travis Build Status](https://api.travis-ci.org/rust-alt/term-string.svg?branch=master)](https://travis-ci.org/rust-alt/term-string) [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/rust-alt/term-string?svg=true&branch=master)](https://ci.appveyor.com/project/MoSal/term-string)
 
 
 ## Detailed Build Status
