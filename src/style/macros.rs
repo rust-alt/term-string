@@ -102,7 +102,8 @@ macro_rules! gen_with_fn {
     (attr, $t:ident, $b:ident) => {
         gen_with_fn_with_doc!(
             attr,
-            concat!("The owning version of `", stringify!($b), "`."),
+            concat!("The owning version of [`", stringify!($b), "`]."),
+            concat!("[`", stringify!($b), "`]: TermStyle::", stringify!($b)),
             $t,
             $b
         );
@@ -110,7 +111,8 @@ macro_rules! gen_with_fn {
     (attrs, $t:ident, $b:ident) => {
         gen_with_fn_with_doc!(
             attrs,
-            concat!("The owning version of `", stringify!($b), "`."),
+            concat!("The owning version of [`", stringify!($b), "`]."),
+            concat!("[`", stringify!($b), "`]: TermStyle::", stringify!($b)),
             $t,
             $b
         );
@@ -118,7 +120,8 @@ macro_rules! gen_with_fn {
     (style, $t:ident, $b:ident) => {
         gen_with_fn_with_doc!(
             style,
-            concat!("The owning version of `", stringify!($b), "`."),
+            concat!("The owning version of [`", stringify!($b), "`]."),
+            concat!("[`", stringify!($b), "`]: TermStyle::", stringify!($b)),
             $t,
             $b
         );
@@ -126,24 +129,30 @@ macro_rules! gen_with_fn {
 }
 
 macro_rules! gen_with_fn_with_doc {
-    (attr, $doc:expr, $t:ident, $b:ident) => (
+    (attr, $doc:expr, $doc2:expr, $t:ident, $b:ident) => (
         #[doc = $doc]
+        ///
+        #[doc = $doc2]
         pub fn $t(mut self, attr: Attr) -> Self {
             self.$b(attr);
             self
         }
     );
 
-    (attrs, $doc:expr, $t:ident, $b:ident) => (
+    (attrs, $doc:expr, $doc2:expr, $t:ident, $b:ident) => (
         #[doc = $doc]
+        ///
+        #[doc = $doc2]
         pub fn $t(mut self, attrs: &impl Borrow<[Attr]>) -> Self {
             self.$b(attrs);
             self
         }
     );
 
-    (style, $doc:expr, $t:ident, $b:ident) => (
+    (style, $doc:expr, $doc2:expr, $t:ident, $b:ident) => (
         #[doc = $doc]
+        ///
+        #[doc = $doc2]
         pub fn $t(mut self, other: impl Into<Self>) -> Self {
             self.$b(other);
             self
