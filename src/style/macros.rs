@@ -9,7 +9,6 @@
     file, You can obtain one at <http://mozilla.org/MPL/2.0/>.
 */
 
-
 // We do this separately because we can't invoke mashup! more than once:
 // https://github.com/dtolnay/mashup/issues/5
 // This macro will be nuked once concat_idents! becomes usable (if ever).
@@ -100,15 +99,30 @@ macro_rules! gen_attr_fns {
 }
 
 macro_rules! gen_with_fn {
-    (attr, $t:ident, $b:ident) => (
-        gen_with_fn_with_doc!(attr, concat!("The owning version of `", stringify!($b), "`."), $t, $b);
-    );
-    (attrs, $t:ident, $b:ident) => (
-        gen_with_fn_with_doc!(attrs, concat!("The owning version of `", stringify!($b), "`."), $t, $b);
-    );
-    (style, $t:ident, $b:ident) => (
-        gen_with_fn_with_doc!(style, concat!("The owning version of `", stringify!($b), "`."), $t, $b);
-    );
+    (attr, $t:ident, $b:ident) => {
+        gen_with_fn_with_doc!(
+            attr,
+            concat!("The owning version of `", stringify!($b), "`."),
+            $t,
+            $b
+        );
+    };
+    (attrs, $t:ident, $b:ident) => {
+        gen_with_fn_with_doc!(
+            attrs,
+            concat!("The owning version of `", stringify!($b), "`."),
+            $t,
+            $b
+        );
+    };
+    (style, $t:ident, $b:ident) => {
+        gen_with_fn_with_doc!(
+            style,
+            concat!("The owning version of `", stringify!($b), "`."),
+            $t,
+            $b
+        );
+    };
 }
 
 macro_rules! gen_with_fn_with_doc {

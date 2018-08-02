@@ -14,11 +14,11 @@ mod tests;
 #[macro_use]
 mod macros;
 
-pub use term::{Attr, color};
+pub use term::{color, Attr};
 
 use std::borrow::Borrow;
-use std::ops::{Add, AddAssign, BitOr, BitOrAssign, Sub, SubAssign};
 use std::mem;
+use std::ops::{Add, AddAssign, BitOr, BitOrAssign, Sub, SubAssign};
 
 use self::color::Color;
 
@@ -27,8 +27,24 @@ pub struct TermStyle {
     pub(crate) attrs: [Option<Attr>; 10],
 }
 
-gen_idents!(bold, dim, blink, reverse, secure, italic, underline, standout, fg, bg,
-            has_exact, has_variant, unset_exact, unset_variant, or, add);
+gen_idents!(
+    bold,
+    dim,
+    blink,
+    reverse,
+    secure,
+    italic,
+    underline,
+    standout,
+    fg,
+    bg,
+    has_exact,
+    has_variant,
+    unset_exact,
+    unset_variant,
+    or,
+    add
+);
 
 // Public: methods for Attr variants
 impl TermStyle {
@@ -54,7 +70,9 @@ impl TermStyle {
     // Append attr at the position of first None, regardless
     // of what the array contents are.
     fn _append_attr(&mut self, attr: Attr) {
-        let first_none = self.attrs.iter()
+        let first_none = self
+            .attrs
+            .iter()
             .position(|&g_attr| g_attr == None)
             .expect("should never happen");
 
@@ -67,11 +85,9 @@ impl TermStyle {
         if exact {
             self.attrs.iter().position(|&g_attr| g_attr == Some(attr))
         } else {
-            self.attrs.iter().position(|&g_attr| {
-                match g_attr {
-                    None       => false,
-                    Some(g_attr) => mem::discriminant(&g_attr) == mem::discriminant(&attr),
-                }
+            self.attrs.iter().position(|&g_attr| match g_attr {
+                None => false,
+                Some(g_attr) => mem::discriminant(&g_attr) == mem::discriminant(&attr),
             })
         }
     }
@@ -102,11 +118,11 @@ impl TermStyle {
 
 // Public: attr methods
 impl TermStyle {
-    pub fn has_exact_attr(&self , attr: Attr) -> bool {
+    pub fn has_exact_attr(&self, attr: Attr) -> bool {
         self._attr_match_pos(attr, true).is_some()
     }
 
-    pub fn has_variant_attr(&self , attr: Attr) -> bool {
+    pub fn has_variant_attr(&self, attr: Attr) -> bool {
         self._attr_match_pos(attr, false).is_some()
     }
 

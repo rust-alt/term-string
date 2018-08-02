@@ -1,8 +1,8 @@
 extern crate term_string;
 
+use term_string::color::{BLUE, MAGENTA, RED, WHITE};
 use term_string::TermString as Str;
 use term_string::TermStyle as Sty;
-use term_string::color::{RED, WHITE, MAGENTA, BLUE};
 
 fn main() {
     let style1 = Sty::fg(WHITE) | Sty::bold() | Sty::bg(RED);

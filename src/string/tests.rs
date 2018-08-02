@@ -143,25 +143,19 @@ fn with_new_style() {
 }
 
 #[test]
-fn reset_style() {
-}
+fn reset_style() {}
 
 #[test]
-fn with_reset_style() {
-}
+fn with_reset_style() {}
 
 #[test]
-fn or_style() {
-}
+fn or_style() {}
 
 #[test]
-fn add_style() {
-}
+fn add_style() {}
 
 #[test]
-fn with_or_style() {
-}
+fn with_or_style() {}
 
 #[test]
-fn with_style() {
-}
+fn with_style() {}

@@ -21,13 +21,12 @@ pub use term::WinConsole;
 
 use isatty;
 
-use std::io::{self, Write};
 use std::borrow::Borrow;
+use std::io::{self, Write};
 use std::ops::{Add, AddAssign};
 
-use style::TermStyle;
 use error::Result;
-
+use style::TermStyle;
 
 #[cfg(not(windows))]
 pub trait TermWrite: Write {}
@@ -40,7 +39,6 @@ pub trait TermWrite: Write + Send {}
 impl<W> TermWrite for W where W: Write {}
 #[cfg(windows)]
 impl<W> TermWrite for W where W: Write + Send {}
-
 
 #[derive(Clone, Default, PartialEq, Debug)]
 struct TermStringElement {
@@ -58,7 +56,7 @@ impl TermStringElement {
 }
 
 impl TermStringElement {
-    fn try_write_styled<W: TermWrite>(&self, out: &mut impl Terminal<Output=W>) -> Result<()> {
+    fn try_write_styled<W: TermWrite>(&self, out: &mut impl Terminal<Output = W>) -> Result<()> {
         // It's important to reset so text with empty style does not inherit attrs
         out.reset()?;
 
@@ -78,7 +76,11 @@ impl TermStringElement {
         write!(out_plain, "{}", &self.text).expect("should never happen");
     }
 
-    fn write_styled<W: TermWrite>(&self, out_term: &mut impl Terminal<Output=W>, out_plain: &mut W) {
+    fn write_styled<W: TermWrite>(
+        &self,
+        out_term: &mut impl Terminal<Output = W>,
+        out_plain: &mut W,
+    ) {
         if self.try_write_styled(out_term).is_err() {
             self.write_plain(out_plain);
         }
@@ -107,7 +109,9 @@ impl TermString {
     }
 
     pub fn as_string(&self) -> String {
-        self.elements.iter().fold(String::with_capacity(1024), |acc, e| acc + &e.text)
+        self.elements
+            .iter()
+            .fold(String::with_capacity(1024), |acc, e| acc + &e.text)
     }
 
     pub fn append_str(&mut self, text: impl Borrow<str>) {
@@ -126,7 +130,9 @@ impl TermString {
     pub fn append(&mut self, other: impl Into<Self>) {
         let mut other = other.into();
         self.elements.retain(|e| *e != TermStringElement::default());
-        other.elements.retain(|e| *e != TermStringElement::default());
+        other
+            .elements
+            .retain(|e| *e != TermStringElement::default());
 
         let mut other_elements_iter = other.elements.into_iter();
 
@@ -174,7 +180,9 @@ impl TermString {
 
     pub fn or_style(&mut self, style: impl Into<TermStyle>) {
         let style = style.into();
-        self.elements.iter_mut().for_each(|f| f.style.or_style(style));
+        self.elements
+            .iter_mut()
+            .for_each(|f| f.style.or_style(style));
     }
 
     pub fn with_ored_style(mut self, style: impl Into<TermStyle>) -> Self {
@@ -184,7 +192,9 @@ impl TermString {
 
     pub fn add_style(&mut self, style: impl Into<TermStyle>) {
         let style = style.into();
-        self.elements.iter_mut().for_each(|f| f.style.add_style(style));
+        self.elements
+            .iter_mut()
+            .for_each(|f| f.style.add_style(style));
     }
 
     pub fn with_style(mut self, style: impl Into<TermStyle>) -> Self {
@@ -199,8 +209,9 @@ gen_idents!(print, eprint, stdout, stderr);
 
 impl TermString {
     pub fn write_plain<F, W>(&self, out: &F)
-        where W: TermWrite,
-              F: Fn() -> W
+    where
+        W: TermWrite,
+        F: Fn() -> W,
     {
         let mut out_plain = out();
         for e in &self.elements {
@@ -210,8 +221,9 @@ impl TermString {
 
     #[cfg(not(windows))]
     pub fn write_styled<F, W>(&self, out: &F)
-        where W: TermWrite,
-              F: Fn() -> W
+    where
+        W: TermWrite,
+        F: Fn() -> W,
     {
         let mut out_plain = out();
 
@@ -227,12 +239,16 @@ impl TermString {
 
     #[cfg(windows)]
     pub fn write_styled<F, W>(&self, out: &F)
-        where W: TermWrite,
-              F: Fn() -> W
+    where
+        W: TermWrite,
+        F: Fn() -> W,
     {
         let mut out_plain = out();
 
-        match (terminfo::TerminfoTerminal::new(out()), WinConsole::new(out())) {
+        match (
+            terminfo::TerminfoTerminal::new(out()),
+            WinConsole::new(out()),
+        ) {
             (Some(mut out_term), _) => {
                 for e in &self.elements {
                     e.write_styled(&mut out_term, &mut out_plain);
@@ -276,7 +292,6 @@ impl Add for TermString {
         self.with_appended(other)
     }
 }
-
 
 impl AddAssign for TermString {
     fn add_assign(&mut self, other: Self) {

@@ -9,9 +9,9 @@
     file, You can obtain one at <http://mozilla.org/MPL/2.0/>.
 */
 
-use style::TermStyle as Sty;
-use style::Attr;
 use style::color::RED;
+use style::Attr;
+use style::TermStyle as Sty;
 
 #[test]
 fn reset() {

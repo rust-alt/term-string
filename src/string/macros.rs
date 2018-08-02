@@ -26,7 +26,7 @@ macro_rules! gen_idents {
 }
 
 macro_rules! gen_print_fns {
-    ($dev:ident, $print:ident) => (
+    ($dev:ident, $print:ident) => {
         m! {
             pub fn $print "plain"(&self) {
                 #[cfg(windows)]
@@ -71,5 +71,5 @@ macro_rules! gen_print_fns {
                 Self::from("\n").$print "plain"();
             }
         }
-    );
+    };
 }

@@ -14,15 +14,15 @@
 #[macro_use]
 extern crate mashup;
 
-pub extern crate term;
 pub extern crate isatty;
+pub extern crate term;
 
 mod error;
-mod style;
 mod string;
+mod style;
 
 #[doc(inline)]
-pub use style::{TermStyle, Attr, color};
+pub use style::{color, Attr, TermStyle};
 
 #[doc(inline)]
 pub use string::TermString;
