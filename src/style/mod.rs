@@ -150,17 +150,6 @@ impl TermStyle {
     gen_with_fn!(attr, with_ored_attr, or_attr);
 }
 
-// Public: attrs methods
-impl TermStyle {
-    gen_from_attr_fns!(has_attrs, has_exact, has_variant);
-    gen_from_attr_fns!(attrs, unset_exact, unset_variant, or, add);
-
-    gen_with_fn!(attrs, without_exact_attrs, unset_exact_attrs);
-    gen_with_fn!(attrs, without_variant_attrs, unset_variant_attrs);
-    gen_with_fn!(attrs, with_attrs, add_attrs);
-    gen_with_fn!(attrs, with_ored_attrs, or_attrs);
-}
-
 // Public: style methods
 impl TermStyle {
     gen_from_attr_fns!(has_style, has_exact, has_variant);
@@ -203,7 +192,9 @@ where
     A: Borrow<[Attr]>,
 {
     fn from(attrs: A) -> Self {
-        Self::default().with_attrs(&attrs)
+        let mut style = Self::default();
+        attrs.borrow().iter().for_each(|&a| style.add_attr(a));
+        style
     }
 }
 

@@ -24,7 +24,6 @@ macro_rules! gen_idents {
                 m["without_exact" $t] = without_exact_ $t;
                 m["with_ored" $t] = with_ored_ $t;
                 m["attr" $t] = $t _attr;
-                m["attrs" $t] = $t _attrs;
                 m["style" $t] = $t _style;
         )* }
     );
@@ -108,15 +107,6 @@ macro_rules! gen_with_fn {
             $b
         );
     };
-    (attrs, $t:ident, $b:ident) => {
-        gen_with_fn_with_doc!(
-            attrs,
-            concat!("The owning version of [`", stringify!($b), "`]."),
-            concat!("[`", stringify!($b), "`]: TermStyle::", stringify!($b)),
-            $t,
-            $b
-        );
-    };
     (style, $t:ident, $b:ident) => {
         gen_with_fn_with_doc!(
             style,
@@ -139,16 +129,6 @@ macro_rules! gen_with_fn_with_doc {
         }
     );
 
-    (attrs, $doc:expr, $doc2:expr, $t:ident, $b:ident) => (
-        #[doc = $doc]
-        ///
-        #[doc = $doc2]
-        pub fn $t<A>(mut self, attrs: &A) -> Self where A: Borrow<[Attr]> {
-            self.$b(attrs);
-            self
-        }
-    );
-
     (style, $doc:expr, $doc2:expr, $t:ident, $b:ident) => (
         #[doc = $doc]
         ///
@@ -161,24 +141,6 @@ macro_rules! gen_with_fn_with_doc {
 }
 
 macro_rules! gen_from_attr_fns {
-    (attrs, $($t:ident),*) => (
-        m! { $(
-                pub fn "attrs" $t<A>(&mut self, attrs: &A) where A: Borrow<[Attr]> {
-                    attrs.borrow().iter().for_each(|&attr| self."attr" $t(attr));
-                }
-        )* }
-    );
-
-    (has_attrs, $($t:ident),*) => (
-        m! { $(
-                pub fn "attrs" $t<A>(&mut self, attrs: &A) -> bool where A: Borrow<[Attr]> {
-                    attrs.borrow().iter()
-                        .map(|&attr| self."attr" $t(attr))
-                        .find(|&has| !has).is_none()
-                }
-        )* }
-    );
-
     (style, $($t:ident),*) => (
         m! { $(
                 pub fn "style" $t<IS>(&mut self, other: IS) where IS: Into<Self> {

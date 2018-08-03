@@ -62,46 +62,6 @@ fn without_exact_attr() {
 }
 
 #[test]
-fn or_attrs() {
-    let mut style1 = Sty::bold() | Sty::secure();
-    let style2 = Sty::bold() | Sty::underline(false) | Sty::secure();
-    style1.or_attrs(&[Attr::Underline(false)]);
-    assert_eq!(style1, style2);
-    style1.or_attrs(&[Attr::Underline(true)]);
-    assert_eq!(style1, style2);
-}
-
-#[test]
-fn add_attrs() {
-    let mut style1 = Sty::bold() | Sty::secure();
-    let style2 = Sty::bold() | Sty::underline(false) | Sty::secure();
-    let style3 = Sty::bold() | Sty::underline(true) | Sty::secure();
-    style1.add_attrs(&[Attr::Underline(false)]);
-    assert_eq!(style1, style2);
-    style1.add_attrs(&[Attr::Underline(true)]);
-    assert_eq!(style1, style3);
-}
-
-#[test]
-fn with_ored_attrs() {
-    let style1 = Sty::bold() | Sty::secure();
-    let style2 = Sty::bold() | Sty::underline(false) | Sty::secure();
-    let style3 = Sty::bold() | Sty::underline(true) | Sty::secure();
-    assert_eq!(style1.with_ored_attrs(&[Attr::Underline(false)]), style2);
-    // We didn't append style1 itself, so Attr::Underline(true) will be appended
-    assert_eq!(style1.with_ored_attrs(&[Attr::Underline(true)]), style3);
-}
-
-#[test]
-fn with_attrs() {
-    let style1 = Sty::bold() | Sty::secure();
-    let style2 = Sty::bold() | Sty::underline(false) | Sty::secure();
-    let style3 = Sty::bold() | Sty::underline(true) | Sty::secure();
-    assert_eq!(style1.with_attrs(&[Attr::Underline(false)]), style2);
-    assert_eq!(style1.with_attrs(&[Attr::Underline(true)]), style3);
-}
-
-#[test]
 fn or_style() {
     let mut style1 = Sty::bold() | Sty::secure();
     let style2 = Sty::bold() | Sty::underline(false) | Sty::secure();
