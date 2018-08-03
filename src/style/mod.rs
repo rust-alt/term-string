@@ -175,12 +175,18 @@ impl TermStyle {
         *self = Self::default();
     }
 
-    pub fn eq_style<IS: Into<Self>>(&self, other: IS) -> bool {
+    pub fn eq_style<IS>(&self, other: IS) -> bool
+    where
+        IS: Into<Self>,
+    {
         let other = other.into();
         self.has_exact_style(other) && other.has_exact_style(*self)
     }
 
-    pub fn eq_variant_style<IS: Into<Self>>(&self, other: IS) -> bool {
+    pub fn eq_variant_style<IS>(&self, other: IS) -> bool
+    where
+        IS: Into<Self>,
+    {
         let other = other.into();
         self.has_variant_style(other) && other.has_variant_style(*self)
     }
@@ -192,47 +198,68 @@ impl PartialEq for TermStyle {
     }
 }
 
-impl<A: Borrow<[Attr]>> From<A> for TermStyle {
+impl<A> From<A> for TermStyle
+where
+    A: Borrow<[Attr]>,
+{
     fn from(attrs: A) -> Self {
         Self::default().with_attrs(&attrs)
     }
 }
 
-impl<I: Into<Self>> BitOr<I> for TermStyle {
+impl<IS> BitOr<IS> for TermStyle
+where
+    IS: Into<Self>,
+{
     type Output = Self;
-    fn bitor(self, other: I) -> Self {
+    fn bitor(self, other: IS) -> Self {
         self.with_ored_style(other.into())
     }
 }
 
-impl<I: Into<Self>> BitOrAssign<I> for TermStyle {
-    fn bitor_assign(&mut self, other: I) {
+impl<IS> BitOrAssign<IS> for TermStyle
+where
+    IS: Into<Self>,
+{
+    fn bitor_assign(&mut self, other: IS) {
         self.or_style(other.into());
     }
 }
 
-impl<I: Into<Self>> Add<I> for TermStyle {
+impl<IS> Add<IS> for TermStyle
+where
+    IS: Into<Self>,
+{
     type Output = Self;
-    fn add(self, other: I) -> Self {
+    fn add(self, other: IS) -> Self {
         self.with_style(other.into())
     }
 }
 
-impl<I: Into<Self>> AddAssign<I> for TermStyle {
-    fn add_assign(&mut self, other: I) {
+impl<IS> AddAssign<IS> for TermStyle
+where
+    IS: Into<Self>,
+{
+    fn add_assign(&mut self, other: IS) {
         self.add_style(other.into());
     }
 }
 
-impl<I: Into<Self>> Sub<I> for TermStyle {
+impl<IS> Sub<IS> for TermStyle
+where
+    IS: Into<Self>,
+{
     type Output = Self;
-    fn sub(self, other: I) -> Self {
+    fn sub(self, other: IS) -> Self {
         self.without_exact_style(other.into())
     }
 }
 
-impl<I: Into<Self>> SubAssign<I> for TermStyle {
-    fn sub_assign(&mut self, other: I) {
+impl<IS> SubAssign<IS> for TermStyle
+where
+    IS: Into<Self>,
+{
+    fn sub_assign(&mut self, other: IS) {
         self.unset_exact_style(other.into());
     }
 }

@@ -11,13 +11,13 @@
 
 use term;
 
-use std::{fmt, result};
+use std::{fmt, io, result};
 
 pub type Result<T> = result::Result<T, Error>;
 
 #[derive(Debug)]
 pub enum Error {
-    StdIO(::std::io::Error),
+    StdIO(io::Error),
     Term(term::Error),
     Other(String),
 }
@@ -32,8 +32,8 @@ impl fmt::Display for Error {
     }
 }
 
-impl From<::std::io::Error> for Error {
-    fn from(e: ::std::io::Error) -> Self {
+impl From<io::Error> for Error {
+    fn from(e: io::Error) -> Self {
         Error::StdIO(e)
     }
 }
