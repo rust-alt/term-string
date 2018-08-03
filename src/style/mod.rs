@@ -55,11 +55,18 @@ impl TermStyle {
         [reverse, Reverse],
         [secure, Secure]
     );
+}
 
+impl TermStyle {
     gen_attr_fns!(
         [italic, Italic, bool],
         [underline, Underline, bool],
-        [standout, Standout, bool],
+        [standout, Standout, bool]
+    );
+}
+
+impl TermStyle {
+    gen_attr_fns!(
         [fg, ForegroundColor, Color],
         [bg, BackgroundColor, Color]
     );
