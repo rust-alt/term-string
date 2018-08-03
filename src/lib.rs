@@ -9,7 +9,7 @@
     file, You can obtain one at <http://mozilla.org/MPL/2.0/>.
 */
 
-#![recursion_limit="2048"]
+#![recursion_limit = "2048"]
 
 #[macro_use]
 extern crate mashup;

@@ -143,7 +143,7 @@ macro_rules! gen_with_fn_with_doc {
         #[doc = $doc]
         ///
         #[doc = $doc2]
-        pub fn $t(mut self, attrs: &impl Borrow<[Attr]>) -> Self {
+        pub fn $t<A: Borrow<[Attr]>>(mut self, attrs: &A) -> Self {
             self.$b(attrs);
             self
         }
@@ -153,7 +153,7 @@ macro_rules! gen_with_fn_with_doc {
         #[doc = $doc]
         ///
         #[doc = $doc2]
-        pub fn $t(mut self, other: impl Into<Self>) -> Self {
+        pub fn $t<IS: Into<Self>>(mut self, other: IS) -> Self {
             self.$b(other);
             self
         }
@@ -163,7 +163,7 @@ macro_rules! gen_with_fn_with_doc {
 macro_rules! gen_from_attr_fns {
     (attrs, $($t:ident),*) => (
         m! { $(
-                pub fn "attrs" $t(&mut self, attrs: &impl Borrow<[Attr]>) {
+                pub fn "attrs" $t<A: Borrow<[Attr]>>(&mut self, attrs: &A) {
                     attrs.borrow().iter().for_each(|&attr| self."attr" $t(attr));
                 }
         )* }
@@ -171,7 +171,7 @@ macro_rules! gen_from_attr_fns {
 
     (has_attrs, $($t:ident),*) => (
         m! { $(
-                pub fn "attrs" $t(&mut self, attrs: &impl Borrow<[Attr]>) -> bool {
+                pub fn "attrs" $t<A: Borrow<[Attr]>>(&mut self, attrs: &A) -> bool {
                     attrs.borrow().iter()
                         .map(|&attr| self."attr" $t(attr))
                         .find(|&has| has == false).is_none()
@@ -181,7 +181,7 @@ macro_rules! gen_from_attr_fns {
 
     (style, $($t:ident),*) => (
         m! { $(
-                pub fn "style" $t(&mut self, other: impl Into<Self>) {
+                pub fn "style" $t<IS: Into<Self>>(&mut self, other: IS) {
                     other.into().attrs.iter()
                         .filter_map(|&attr| attr)
                         .for_each(|attr| self."attr" $t(attr));
@@ -191,7 +191,7 @@ macro_rules! gen_from_attr_fns {
 
     (has_style, $($t:ident),*) => (
         m! { $(
-                pub fn "style" $t(&self, other: impl Into<Self>) -> bool {
+                pub fn "style" $t<IS: Into<Self>>(&self, other: IS) -> bool {
                     other.into().attrs.iter()
                         .filter_map(|&attr| attr)
                         .map(|attr| self."attr" $t(attr))

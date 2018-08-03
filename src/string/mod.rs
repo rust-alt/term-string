@@ -56,7 +56,11 @@ impl TermStringElement {
 }
 
 impl TermStringElement {
-    fn try_write_styled<W: TermWrite>(&self, out: &mut impl Terminal<Output = W>) -> Result<()> {
+    fn try_write_styled<W, TERM>(&self, out: &mut TERM) -> Result<()>
+    where
+        W: TermWrite,
+        TERM: Terminal<Output = W>,
+    {
         // It's important to reset so text with empty style does not inherit attrs
         out.reset()?;
 
@@ -76,11 +80,11 @@ impl TermStringElement {
         write!(out_plain, "{}", &self.text).expect("should never happen");
     }
 
-    fn write_styled<W: TermWrite>(
-        &self,
-        out_term: &mut impl Terminal<Output = W>,
-        out_plain: &mut W,
-    ) {
+    fn write_styled<W, TERM>(&self, out_term: &mut TERM, out_plain: &mut W)
+    where
+        W: TermWrite,
+        TERM: Terminal<Output = W>,
+    {
         if self.try_write_styled(out_term).is_err() {
             self.write_plain(out_plain);
         }
@@ -114,7 +118,7 @@ impl TermString {
             .fold(String::with_capacity(1024), |acc, e| acc + &e.text)
     }
 
-    pub fn append_str(&mut self, text: impl Borrow<str>) {
+    pub fn append_str<S: Borrow<str>>(&mut self, text: S) {
         if self.elements.last().is_none() {
             self.append(text);
         } else if let Some(last) = self.elements.last_mut() {
@@ -122,12 +126,12 @@ impl TermString {
         }
     }
 
-    pub fn with_appended_str(mut self, text: impl Borrow<str>) -> Self {
+    pub fn with_appended_str<S: Borrow<str>>(mut self, text: S) -> Self {
         self.append_str(text);
         self
     }
 
-    pub fn append(&mut self, other: impl Into<Self>) {
+    pub fn append<IS: Into<Self>>(&mut self, other: IS) {
         let mut other = other.into();
         self.elements.retain(|e| *e != TermStringElement::default());
         other
@@ -151,7 +155,7 @@ impl TermString {
         }
     }
 
-    pub fn with_appended(mut self, other: impl Into<Self>) -> Self {
+    pub fn with_appended<IS: Into<Self>>(mut self, other: IS) -> Self {
         self.append(other);
         self
     }
@@ -159,12 +163,12 @@ impl TermString {
 
 // Style
 impl TermString {
-    pub fn set_style(&mut self, style: impl Into<TermStyle>) {
+    pub fn set_style<IT: Into<TermStyle>>(&mut self, style: IT) {
         let style = style.into();
         self.elements.iter_mut().for_each(|f| f.style = style);
     }
 
-    pub fn with_set_style(mut self, style: impl Into<TermStyle>) -> Self {
+    pub fn with_set_style<IT: Into<TermStyle>>(mut self, style: IT) -> Self {
         self.set_style(style);
         self
     }
@@ -178,26 +182,26 @@ impl TermString {
         self
     }
 
-    pub fn or_style(&mut self, style: impl Into<TermStyle>) {
+    pub fn or_style<IT: Into<TermStyle>>(&mut self, style: IT) {
         let style = style.into();
         self.elements
             .iter_mut()
             .for_each(|f| f.style.or_style(style));
     }
 
-    pub fn with_ored_style(mut self, style: impl Into<TermStyle>) -> Self {
+    pub fn with_ored_style<IT: Into<TermStyle>>(mut self, style: IT) -> Self {
         self.or_style(style);
         self
     }
 
-    pub fn add_style(&mut self, style: impl Into<TermStyle>) {
+    pub fn add_style<IT: Into<TermStyle>>(&mut self, style: IT) {
         let style = style.into();
         self.elements
             .iter_mut()
             .for_each(|f| f.style.add_style(style));
     }
 
-    pub fn with_style(mut self, style: impl Into<TermStyle>) -> Self {
+    pub fn with_style<IT: Into<TermStyle>>(mut self, style: IT) -> Self {
         self.add_style(style);
         self
     }

@@ -175,12 +175,12 @@ impl TermStyle {
         *self = Self::default();
     }
 
-    pub fn eq_style(&self, other: impl Into<Self>) -> bool {
+    pub fn eq_style<IS: Into<Self>>(&self, other: IS) -> bool {
         let other = other.into();
         self.has_exact_style(other) && other.has_exact_style(*self)
     }
 
-    pub fn eq_variant_style(&self, other: impl Into<Self>) -> bool {
+    pub fn eq_variant_style<IS: Into<Self>>(&self, other: IS) -> bool {
         let other = other.into();
         self.has_variant_style(other) && other.has_variant_style(*self)
     }
