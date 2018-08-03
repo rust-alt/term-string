@@ -140,7 +140,7 @@ impl TermString {
 
         let mut other_elements_iter = other.elements.into_iter();
 
-        if self.elements.len() > 0 {
+        if !self.elements.is_empty() {
             while let Some(next) = other_elements_iter.next() {
                 if next.style == self.elements.last().expect("impossible").style {
                     self.append_str(&*next.text);

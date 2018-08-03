@@ -174,7 +174,7 @@ macro_rules! gen_from_attr_fns {
                 pub fn "attrs" $t<A: Borrow<[Attr]>>(&mut self, attrs: &A) -> bool {
                     attrs.borrow().iter()
                         .map(|&attr| self."attr" $t(attr))
-                        .find(|&has| has == false).is_none()
+                        .find(|&has| !has).is_none()
                 }
         )* }
     );
@@ -195,7 +195,7 @@ macro_rules! gen_from_attr_fns {
                     other.into().attrs.iter()
                         .filter_map(|&attr| attr)
                         .map(|attr| self."attr" $t(attr))
-                        .find(|&has| has == false).is_none()
+                        .find(|&has| !has).is_none()
                 }
         )* }
     );
