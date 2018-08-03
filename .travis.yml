@@ -55,7 +55,6 @@ matrix:
 
 sudo: false
 script:
-  - cargo build --all-targets --features "$FEATURES"
-  - cargo test --features "$FEATURES"
-  - cargo doc --no-deps --features "$FEATURES"
+  - cargo test --all-targets --features "$FEATURES"
+  - cargo doc --features "$FEATURES"
   - cargo run --example test --features "$FEATURES"

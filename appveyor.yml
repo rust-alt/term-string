@@ -35,5 +35,5 @@ build: false
 # environment variable.
 test_script:
   - cargo test %cargoflags%
-  - cargo doc --no-deps %cargoflags%
+  - cargo doc %cargoflags%
   - cargo run --example test %cargoflags%
