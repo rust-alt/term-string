@@ -66,10 +66,7 @@ impl TermStyle {
 }
 
 impl TermStyle {
-    gen_attr_fns!(
-        [fg, ForegroundColor, Color],
-        [bg, BackgroundColor, Color]
-    );
+    gen_attr_fns!([fg, ForegroundColor, Color], [bg, BackgroundColor, Color]);
 }
 
 // Internal: use carefully
