@@ -17,6 +17,9 @@ extern crate mashup;
 pub extern crate isatty;
 pub extern crate term;
 
+#[macro_use]
+mod common_macros;
+
 mod error;
 mod string;
 mod style;
