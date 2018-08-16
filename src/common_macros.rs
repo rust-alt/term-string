@@ -11,12 +11,12 @@
 
 macro_rules! chaining_fn {
     ($ty:ty, $br:ident, $($tt:tt)*) => (
-        gen_chaining_fn_with_doc!(concat!("The chaining equivalent of [`", stringify!($br), "()`].\n\n",
+        gen_fn_with_doc!(concat!("The chaining equivalent of [`", stringify!($br), "()`].\n\n",
         "[`", stringify!($br), "()`]: ", stringify!($ty), "::", stringify!($br)), $($tt)*);
     )
 }
 
-macro_rules! gen_chaining_fn_with_doc {
+macro_rules! gen_fn_with_doc {
     ($doc:expr, $($tt:tt)*) => (
         #[doc = $doc]
         $($tt)*
