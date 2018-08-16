@@ -9,6 +9,8 @@
     file, You can obtain one at <http://mozilla.org/MPL/2.0/>.
 */
 
+// TODO: explore indexing and PartialEq
+
 #[cfg(test)]
 mod tests;
 #[macro_use]
@@ -100,47 +102,201 @@ pub struct TermString {
 }
 
 // Essentials
+/// Basic methods for constructing and modifying [`TermString`]s,
 impl TermString {
-    pub fn new(style: TermStyle, text: &str) -> Self {
+    /// Create a [`TermString`] variable from a [`TermStyle`] and a string value.
+    ///
+    /// # Examples
+    ///
+    /// ``` rust
+    /// # use term_string::{TermString, TermStyle};
+    /// let bold = TermStyle::bold();
+    /// let ts = TermString::new(bold, "some bold text");
+    /// ts.println();
+    /// ```
+    pub fn new<S>(style: TermStyle, text: S) -> Self
+    where
+        S: Borrow<str>,
+    {
         let mut elements = Vec::with_capacity(128);
-        elements.push(TermStringElement::new(style, text));
+        elements.push(TermStringElement::new(style, text.borrow()));
         Self { elements }
     }
 
+    /// Return the length of the un-styled string contained in [`TermString`].
+    ///
+    /// # Examples
+    ///
+    /// ``` rust
+    /// # use term_string::{TermString, TermStyle};
+    /// let bold = TermStyle::bold();
+    /// let underline = TermStyle::underline(true);
+    /// let mut ts = TermString::new(bold, "some bold text ");
+    /// ts += TermString::new(underline, "and some underlined text.");
+    /// assert_eq!(ts.len(), 40);
+    /// ```
     pub fn len(&self) -> usize {
         self.elements.iter().fold(0, |acc, e| acc + e.text.len())
     }
 
+    /// Return true if the un-styled string contained in [`TermString`]
+    /// is empty.
+    ///
+    /// # Examples
+    ///
+    /// ``` rust
+    /// # use term_string::{TermString, TermStyle};
+    /// let bold = TermStyle::bold();
+    /// let mut ts = TermString::new(bold, "");
+    /// assert!(ts.is_empty());
+    /// ts += "this is bold."
+    /// ```
+    // Note: empty does not imply the struct's internal vector is also empty.
     pub fn is_empty(&self) -> bool {
-        self.elements.is_empty()
+        self.len() == 0
     }
 
+    /// Return the un-styled string contained in [`TermString`].
+    ///
+    /// # Examples
+    ///
+    /// ``` rust
+    /// # use term_string::{TermString, TermStyle};
+    /// let bold = TermStyle::bold();
+    /// let underline = TermStyle::underline(true);
+    /// let mut ts = TermString::new(bold, "some bold text ");
+    /// ts += TermString::new(underline, "and some underlined text.");
+    /// let s = "some bold text and some underlined text.";
+    /// assert_eq!(ts.as_string(), s);
+    /// ```
     pub fn as_string(&self) -> String {
         self.elements
             .iter()
             .fold(String::with_capacity(1024), |acc, e| acc + &e.text)
     }
 
+    /// Append a string value to a [`TermString`], inheriting the previous style.
+    ///
+    /// # Examples
+    ///
+    /// ``` rust
+    /// # use term_string::{TermString, TermStyle};
+    /// let bold = TermStyle::bold();
+    /// let mut ts = TermString::new(bold, "some bold text ");
+    /// ts.append_str("and other bold text");
+    /// ts.println();
+    /// ```
+    ///
+    /// Note that the line:
+    ///
+    /// ``` rust
+    /// # use term_string::{TermString, TermStyle};
+    /// # let bold = TermStyle::bold();
+    /// # let mut ts = TermString::new(bold, "some bold text ");
+    /// ts.append_str("and other bold text");
+    /// ```
+    ///
+    ///  is equivalent to:
+    ///
+    ///  ``` rust
+    /// # use term_string::{TermString, TermStyle};
+    /// # let bold = TermStyle::bold();
+    /// # let mut ts = TermString::new(bold, "some bold text ");
+    /// ts += "and other bold text";
+    ///  ```
     pub fn append_str<S>(&mut self, text: S)
     where
         S: Borrow<str>,
     {
         if self.elements.last().is_none() {
-            self.append(text);
+            self.append_term_str(text);
         } else if let Some(last) = self.elements.last_mut() {
             last.text += text.borrow();
         }
     }
 
-    pub fn with_appended_str<S>(mut self, text: S) -> Self
-    where
-        S: Borrow<str>,
-    {
-        self.append_str(text);
-        self
-    }
-
-    pub fn append<IS>(&mut self, other: IS)
+    /// Append a [`TermString`] to a [`TermString`].
+    ///
+    /// # Examples
+    ///
+    /// ``` rust
+    /// # use term_string::{TermString, TermStyle};
+    /// let bold = TermStyle::bold();
+    /// let underline = TermStyle::underline(true);
+    /// let mut ts = TermString::new(bold, "some bold text ");
+    /// let ts2 = TermString::new(underline, "and some underlined text.");
+    /// ts.append_term_str(ts2);
+    /// ts.println();
+    /// ```
+    ///
+    /// Note that the line:
+    ///
+    /// ``` rust
+    /// # use term_string::{TermString, TermStyle};
+    /// # let bold = TermStyle::bold();
+    /// # let underline = TermStyle::underline(true);
+    /// # let mut ts = TermString::new(bold, "some bold text ");
+    /// # let ts2 = TermString::new(underline, "and some underlined text.");
+    /// ts.append_term_str(ts2);
+    /// ```
+    ///
+    ///  is equivalent to:
+    ///
+    /// ``` rust
+    /// # use term_string::{TermString, TermStyle};
+    /// # let bold = TermStyle::bold();
+    /// # let underline = TermStyle::underline(true);
+    /// # let mut ts = TermString::new(bold, "some bold text ");
+    /// # let ts2 = TermString::new(underline, "and some underlined text.");
+    /// ts += ts2;
+    /// ```
+    ///
+    /// Also note that the method's argument type is `Into<Self>`, and
+    /// `From<S> for TermString where S: Borrow<str>` is implemented.
+    ///
+    /// So, this works:
+    ///
+    /// ``` rust
+    /// # use term_string::{TermString, TermStyle};
+    /// let bold = TermStyle::bold();
+    /// let mut ts = TermString::new(bold, "some bold text ");
+    /// ts.append_term_str("and some un-styled text.");
+    /// ts.println();
+    /// ```
+    /// Note that the method argument in the example above is converted
+    /// into a [`TermString`] with a `Default` style first before appending.
+    /// Contrast this with the behavior of [`append_str()`], where the appended
+    /// value inherits the previous style.
+    ///
+    /// [`append_str()`]: TermString::append_str()
+    ///
+    /// So, the line:
+    ///
+    /// ``` rust
+    /// # use term_string::{TermString, TermStyle};
+    /// # let bold = TermStyle::bold();
+    /// # let mut ts = TermString::new(bold, "some bold text ");
+    /// ts.append_term_str("and some un-styled text.");
+    ///```
+    ///
+    ///  is equivalent to:
+    ///
+    /// ``` rust
+    /// # use term_string::{TermString, TermStyle};
+    /// # let bold = TermStyle::bold();
+    /// # let mut ts = TermString::new(bold, "some bold text ");
+    /// ts += TermString::from("and some un-styled text.");
+    /// ```
+    ///
+    /// which in turn is equivalent to:
+    ///
+    /// ``` rust
+    /// # use term_string::{TermString, TermStyle};
+    /// # let bold = TermStyle::bold();
+    /// # let mut ts = TermString::new(bold, "some bold text ");
+    /// ts += TermString::new(TermStyle::default(), "and some un-styled text.");
+    /// ```
+    pub fn append_term_str<IS>(&mut self, other: IS)
     where
         IS: Into<Self>,
     {
@@ -167,17 +323,74 @@ impl TermString {
         }
     }
 
-    pub fn with_appended<IS>(mut self, other: IS) -> Self
+    /// This is effectively an alias to [`append_term_str()`]
+    ///
+    /// [`append_term_str()`]: TermString::append_term_str
+    pub fn append<IS>(&mut self, other: IS)
     where
         IS: Into<Self>,
     {
-        self.append(other);
-        self
+        self.append_term_str(other);
     }
+
+    chaining_fn!(TermString, append_str,
+               pub fn with_appended_str<S>(mut self, text: S) -> Self
+               where
+                   S: Borrow<str>,
+               {
+                   self.append_str(text);
+                   self
+               }
+    );
+
+    chaining_fn!(TermString, append_term_str,
+                  pub fn with_appended_term_str<IS>(mut self, other: IS) -> Self
+                  where
+                      IS: Into<Self>,
+                  {
+                      self.append_term_str(other);
+                      self
+                  }
+    );
+
+    chaining_fn!(TermString, append,
+                  pub fn with_appended<IS>(mut self, other: IS) -> Self
+                  where
+                      IS: Into<Self>,
+                  {
+                      self.append(other);
+                      self
+                  }
+    );
 }
 
 // Style
+/// Method for modifying the style of all internal elements of a [`TermString`].
+///
+/// A corresponding method from [`TermStyle`] is used on each internal element
+/// of the [`TermString`].
+///
+/// Remember that [`TermStyle`] is a `Copy` type.
 impl TermString {
+    /// Set the styles of all internal elements of the [`TermString`] to this style.
+    ///
+    /// # Examples
+    ///
+    /// ``` rust
+    /// use term_string::{TermString, TermStyle, color};
+    ///
+    /// let fg_bg = TermStyle::bg(color::RED) + TermStyle::fg(color::WHITE);
+    /// let underline = TermStyle::underline(true);
+    ///
+    /// let mut ts = TermString::new(fg_bg, "fg bg");
+    /// ts += TermString::new(underline, " underline");
+    ///
+    /// ts.set_style(TermStyle::bold());
+    ///
+    /// // This will print "fg bg underline" in bold and without
+    /// // foreground or background colors or underline.
+    /// ts.println();
+    /// ```
     pub fn set_style<IT>(&mut self, style: IT)
     where
         IT: Into<TermStyle>,
@@ -186,23 +399,64 @@ impl TermString {
         self.elements.iter_mut().for_each(|f| f.style = style);
     }
 
-    pub fn with_set_style<IT>(mut self, style: IT) -> Self
-    where
-        IT: Into<TermStyle>,
-    {
-        self.set_style(style);
-        self
-    }
+    chaining_fn!(TermString, set_style,
+                  pub fn with_set_style<IT>(mut self, style: IT) -> Self
+                  where
+                      IT: Into<TermStyle>,
+                  {
+                      self.set_style(style);
+                      self
+                  }
+    );
 
+    /// Reset the styles of all internal elements of the [`TermString`].
+    ///
+    /// # Examples
+    ///
+    /// ``` rust
+    /// use term_string::{TermString, TermStyle, color};
+    ///
+    /// let fg_bg = TermStyle::bg(color::RED) + TermStyle::fg(color::WHITE);
+    /// let underline = TermStyle::underline(true);
+    ///
+    /// let mut ts = TermString::new(fg_bg, "fg bg");
+    /// ts += TermString::new(underline, " underline");
+    ///
+    /// ts.reset_style();
+    ///
+    /// // This will print "fg bg underline" without any styling
+    /// ts.println();
+    /// ```
     pub fn reset_style(&mut self) {
         self.elements.iter_mut().for_each(|f| f.style.reset());
     }
 
-    pub fn with_reset_style(mut self) -> Self {
-        self.reset_style();
-        self
-    }
+    chaining_fn!(TermString, reset_style,
+                 pub fn with_reset_style(mut self) -> Self {
+                     self.reset_style();
+                     self
+                 }
+    );
 
+    /// Calls [`TermStyle::or_style()`] on each internal element of the [`TermString`].
+    ///
+    /// # Examples
+    ///
+    /// ``` rust
+    /// use term_string::{TermString, TermStyle, color};
+    ///
+    /// let fg_bg = TermStyle::bg(color::RED) + TermStyle::fg(color::WHITE);
+    /// let underline = TermStyle::underline(true);
+    ///
+    /// let mut ts = TermString::new(fg_bg, "fg bg");
+    /// ts += TermString::new(underline, " underline");
+    ///
+    /// ts.or_style(TermStyle::bg(color::BLUE));
+    ///
+    /// // This will print "fg bg" with red background and white foreground,
+    /// // then " underline" with underline and blue background.
+    /// ts.println();
+    /// ```
     pub fn or_style<IT>(&mut self, style: IT)
     where
         IT: Into<TermStyle>,
@@ -213,14 +467,35 @@ impl TermString {
             .for_each(|f| f.style.or_style(style));
     }
 
-    pub fn with_ored_style<IT>(mut self, style: IT) -> Self
-    where
-        IT: Into<TermStyle>,
-    {
-        self.or_style(style);
-        self
-    }
+    chaining_fn!(TermString, or_style,
+                 pub fn with_ored_style<IT>(mut self, style: IT) -> Self
+                 where
+                     IT: Into<TermStyle>,
+                 {
+                     self.or_style(style);
+                     self
+                 }
+    );
 
+    /// Calls [`TermStyle::add_style()`] on each internal element of the [`TermString`].
+    ///
+    /// # Examples
+    ///
+    /// ``` rust
+    /// use term_string::{TermString, TermStyle, color};
+    ///
+    /// let fg_bg = TermStyle::bg(color::RED) + TermStyle::fg(color::WHITE);
+    /// let underline = TermStyle::underline(true);
+    ///
+    /// let mut ts = TermString::new(fg_bg, "fg bg");
+    /// ts += TermString::new(underline, " underline");
+    ///
+    /// ts.add_style(TermStyle::bg(color::BLUE));
+    ///
+    /// // This will print "fg bg" with blue background and white foreground,
+    /// // then " underline" with underline and blue background.
+    /// ts.println();
+    /// ```
     pub fn add_style<IT>(&mut self, style: IT)
     where
         IT: Into<TermStyle>,
@@ -231,20 +506,39 @@ impl TermString {
             .for_each(|f| f.style.add_style(style));
     }
 
-    pub fn with_style<IT>(mut self, style: IT) -> Self
-    where
-        IT: Into<TermStyle>,
-    {
-        self.add_style(style);
-        self
-    }
+    chaining_fn!(TermString, add_style,
+                 pub fn with_style<IT>(mut self, style: IT) -> Self
+                 where
+                     IT: Into<TermStyle>,
+                 {
+                     self.add_style(style);
+                     self
+                 }
+    );
 }
 
 // write/print
 
 gen_idents!(print, eprint, stdout, stderr);
 
+/// IO write/print methods
+///
+/// # Note
+/// `TermWrite` is bound to `Write + Send` on Windows, and only `Write`
+/// on other platforms.
 impl TermString {
+    /// Write [`TermString`] to `out` without styling.
+    ///
+    /// # Examples
+    /// ``` rust
+    /// # use term_string::{TermString, TermStyle};
+    /// let bold = TermStyle::bold();
+    /// let ts = TermString::new(bold, "some bold text");
+    ///
+    /// // This will write "some bold text" to stdout without
+    /// // any formatting, so not really bold.
+    /// ts.write_plain(&|| std::io::stdout());
+    /// ```
     pub fn write_plain<F, W>(&self, out: &F)
     where
         W: TermWrite,
@@ -257,7 +551,7 @@ impl TermString {
     }
 
     #[cfg(not(windows))]
-    pub fn write_styled<F, W>(&self, out: &F)
+    fn _write_styled<F, W>(&self, out: &F)
     where
         W: TermWrite,
         F: Fn() -> W,
@@ -275,7 +569,7 @@ impl TermString {
     }
 
     #[cfg(windows)]
-    pub fn write_styled<F, W>(&self, out: &F)
+    fn _write_styled<F, W>(&self, out: &F)
     where
         W: TermWrite,
         F: Fn() -> W,
@@ -300,34 +594,67 @@ impl TermString {
         }
     }
 
+    /// Write [`TermString`] to `out` with styling.
+    ///
+    /// # Note
+    ///
+    /// `out` doesn't have to be an actual tty.
+    ///
+    /// Check out [`print()`], [`println()`], [`eprint()`], and [`eprintln()`]
+    /// below, where `out` is checked before styled output is written to it.
+    ///
+    ///
+    /// [`print()`]: TermString::print
+    /// [`println()`]: TermString::println
+    /// [`eprint()`]: TermString::eprint
+    /// [`eprintln()`]: TermString::eprintln
+    ///
+    /// # Examples
+    /// ``` rust
+    /// # use term_string::{TermString, TermStyle};
+    /// let bold = TermStyle::bold();
+    /// let ts = TermString::new(bold, "some bold text");
+    ///
+    /// // This will write "some bold text" to stdout with formatting,
+    /// // even if stdout is not a tty
+    /// ts.write_styled(&|| std::io::stdout());
+    /// ```
+    pub fn write_styled<F, W>(&self, out: &F)
+    where
+        W: TermWrite,
+        F: Fn() -> W,
+    {
+        self._write_styled(out)
+    }
+
     gen_print_fns!(stdout, print);
     gen_print_fns!(stderr, eprint);
 }
 
-impl<B> From<B> for TermString
+impl<S> From<S> for TermString
 where
-    B: Borrow<str>,
+    S: Borrow<str>,
 {
-    fn from(s: B) -> Self {
+    fn from(s: S) -> Self {
         Self::new(TermStyle::default(), s.borrow())
     }
 }
 
-impl<B> Add<B> for TermString
+impl<S> Add<S> for TermString
 where
-    B: Borrow<str>,
+    S: Borrow<str>,
 {
     type Output = Self;
-    fn add(self, text: B) -> Self {
+    fn add(self, text: S) -> Self {
         self.with_appended_str(text)
     }
 }
 
-impl<B> AddAssign<B> for TermString
+impl<S> AddAssign<S> for TermString
 where
-    B: Borrow<str>,
+    S: Borrow<str>,
 {
-    fn add_assign(&mut self, text: B) {
+    fn add_assign(&mut self, text: S) {
         self.append_str(text);
     }
 }
@@ -335,12 +662,12 @@ where
 impl Add for TermString {
     type Output = Self;
     fn add(self, other: Self) -> Self {
-        self.with_appended(other)
+        self.with_appended_term_str(other)
     }
 }
 
 impl AddAssign for TermString {
     fn add_assign(&mut self, other: Self) {
-        self.append(other);
+        self.append_term_str(other);
     }
 }

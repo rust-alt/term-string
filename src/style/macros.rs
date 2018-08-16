@@ -100,45 +100,25 @@ macro_rules! gen_attr_fns {
 }
 
 macro_rules! gen_with_fn {
-    (attr, $t:ident, $b:ident) => {
-        gen_with_fn_with_doc!(
-            attr,
-            concat!("The owning version of [`", stringify!($b), "`]."),
-            concat!("[`", stringify!($b), "`]: TermStyle::", stringify!($b)),
-            $t,
-            $b
+    (attr, $t:ident, $b:ident) => (
+        chaining_fn!(TermStyle, $b,
+                      pub fn $t(mut self, attr: Attr) -> Self {
+                          self.$b(attr);
+                          self
+                      }
         );
-    };
-    (style, $t:ident, $b:ident) => {
-        gen_with_fn_with_doc!(
-            style,
-            concat!("The owning version of [`", stringify!($b), "`]."),
-            concat!("[`", stringify!($b), "`]: TermStyle::", stringify!($b)),
-            $t,
-            $b
-        );
-    };
-}
-
-macro_rules! gen_with_fn_with_doc {
-    (attr, $doc:expr, $doc2:expr, $t:ident, $b:ident) => (
-        #[doc = $doc]
-        ///
-        #[doc = $doc2]
-        pub fn $t(mut self, attr: Attr) -> Self {
-            self.$b(attr);
-            self
-        }
     );
 
-    (style, $doc:expr, $doc2:expr, $t:ident, $b:ident) => (
-        #[doc = $doc]
-        ///
-        #[doc = $doc2]
-        pub fn $t<IS>(mut self, other: IS) -> Self where IS: Into<Self> {
-            self.$b(other);
-            self
-        }
+    (style, $t:ident, $b:ident) => (
+        chaining_fn!(TermStyle, $b,
+                      pub fn $t<IS>(mut self, other: IS) -> Self
+                      where
+                          IS: Into<Self>,
+                      {
+                          self.$b(other);
+                          self
+                      }
+        );
     );
 }
 

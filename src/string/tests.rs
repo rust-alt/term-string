@@ -43,14 +43,6 @@ fn len() {
 }
 
 #[test]
-fn is_empty() {
-    let t_str1 = Str::default();
-    let t_str2 = Str::new(Sty::default(), "");
-    assert!(t_str1.is_empty());
-    assert!(!t_str2.is_empty());
-}
-
-#[test]
 fn as_string() {
     let text1 = "Hello ";
     let text2 = "World!";
@@ -89,18 +81,18 @@ fn with_appended_str() {
 }
 
 #[test]
-fn append() {
+fn append_term_str() {
     let mut t_str1 = Str::default();
     let t_str2 = Str::new(Sty::default(), " ");
-    t_str1.append(" ");
+    t_str1.append_term_str(" ");
     assert_eq!(t_str1.elements, t_str2.elements);
 }
 
 #[test]
-fn with_appended() {
+fn with_appended_term_str() {
     let t_str1 = Str::default();
     let t_str2 = Str::new(Sty::default(), " ");
-    assert_eq!(t_str1.with_appended(" ").elements, t_str2.elements);
+    assert_eq!(t_str1.with_appended_term_str(" ").elements, t_str2.elements);
 }
 
 // Style

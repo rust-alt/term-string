@@ -9,14 +9,14 @@
     file, You can obtain one at <http://mozilla.org/MPL/2.0/>.
 */
 
-macro_rules! chainable_fn {
+macro_rules! chaining_fn {
     ($ty:ty, $br:ident, $($tt:tt)*) => (
-        gen_chainable_fn_with_doc!(concat!("The chain-able equivalent of [`", stringify!($br), "()`].\n\n",
+        gen_chaining_fn_with_doc!(concat!("The chaining equivalent of [`", stringify!($br), "()`].\n\n",
         "[`", stringify!($br), "()`]: ", stringify!($ty), "::", stringify!($br)), $($tt)*);
     )
 }
 
-macro_rules! gen_chainable_fn_with_doc {
+macro_rules! gen_chaining_fn_with_doc {
     ($doc:expr, $($tt:tt)*) => (
         #[doc = $doc]
         $($tt)*
