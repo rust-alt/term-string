@@ -97,6 +97,7 @@ impl TermStringElement {
 }
 
 #[derive(Clone, Default, Debug)]
+/// TODO
 pub struct TermString {
     elements: Vec<TermStringElement>,
 }

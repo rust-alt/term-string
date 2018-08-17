@@ -41,7 +41,7 @@
 //!
 //! Check [`TermStyle`] and [`TermString`] for detailed documentation of each type.
 
-#![recursion_limit = "1024"]
+#![recursion_limit = "2048"]
 
 #[macro_use]
 extern crate mashup;

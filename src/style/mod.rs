@@ -23,6 +23,7 @@ use std::ops::{Add, AddAssign, BitOr, BitOrAssign, Sub, SubAssign};
 use self::color::Color;
 
 #[derive(Copy, Clone, Default, Debug)]
+/// TODO with ops
 pub struct TermStyle {
     pub(crate) attrs: [Option<Attr>; 10],
 }
@@ -46,7 +47,22 @@ gen_idents!(
     add
 );
 
-// Public: methods for Attr variants
+/// Helper methods for setting, unsetting, and checking [`Attr`] variants
+/// in a [`TermStyle`] variable.
+///
+/// This block has helper methods for [`Attr`] variants with no data:
+///
+/// (*`bold`*, *`dim`*, *`blink`*, *`reverse`*, *`secure`*)
+///
+/// # Examples
+/// ``` rust
+/// # use term_string::TermStyle;
+/// let mut style = TermStyle::bold();
+/// assert!(style.has_bold());
+/// style.unset_bold();
+/// assert!(!style.has_bold());
+/// ```
+///
 impl TermStyle {
     gen_attr_fns!(
         [bold, Bold],
@@ -57,6 +73,39 @@ impl TermStyle {
     );
 }
 
+/// Helper methods for setting, unsetting, and checking [`Attr`] variants
+/// in a [`TermStyle`] variable.
+///
+/// This block has helper methods for [`Attr`] variants with `bool` data:
+///
+/// (*`italic`*, *`underline`*, *`standout`*)
+///
+/// # Note
+///
+/// Unlike the attribute variants in the above block, those attributes have
+/// `bool` data. This is because those capabilities were a late addition to
+/// the `terminfo` database. And when they were added, they were added in
+/// pairs (enter capability mode, exit capability mode).
+///
+/// There is no reason and no need to set any of those attributes with `false`
+/// here, as styles are fully reset between writes/prints. The API is still fully
+/// exposed to stay close and introduce no magic over what the [`term`] crate
+/// exposes ([`Attr`] is a re-export of [`term`]::Attr).
+///
+/// # Examples
+/// ``` rust
+/// # use term_string::TermStyle;
+/// let mut style = TermStyle::underline(true);
+/// // Returns true if underline is set, to true or false.
+/// assert!(style.has_underline());
+/// assert!(style.has_exact_underline(true));
+/// assert!(!style.has_exact_underline(false));
+/// // style.unset_exact_underline(true);
+/// // Unsets whether underline is true or false.
+/// style.unset_underline();
+/// assert!(!style.has_underline());
+/// ```
+///
 impl TermStyle {
     gen_attr_fns!(
         [italic, Italic, bool],
@@ -65,8 +114,45 @@ impl TermStyle {
     );
 }
 
+/// Helper methods for setting, unsetting, and checking [`Attr`] variants
+/// in a [`TermStyle`] variable.
+///
+/// This block has helper methods for [`Attr`] variants with [`Color`] data:
+///
+/// (*`fg`*, *`bg`*)
+///
+/// # Examples
+/// ``` rust
+/// use term_string::{TermStyle, color};
+///
+/// let mut style = TermStyle::fg(color::BLUE);
+/// style += TermStyle::bg(color::WHITE);
+/// // ==========
+/// assert!(style.has_fg());
+/// assert!(style.has_bg());
+/// // ==========
+/// assert!(style.has_exact_fg(color::BLUE));
+/// assert!(style.has_exact_bg(color::WHITE));
+/// // ==========
+/// assert!(!style.has_exact_fg(color::RED));
+/// assert!(!style.has_exact_bg(color::GREEN));
+/// // ==========
+/// style.unset_exact_fg(color::RED); // no effect
+/// style.unset_exact_bg(color::GREEN); // no effect
+/// assert!(!style.has_exact_fg(color::RED));
+/// assert!(!style.has_exact_bg(color::GREEN));
+/// // ==========
+/// style.unset_fg();
+/// style.unset_bg();
+/// assert!(!style.has_fg());
+/// assert!(!style.has_bg());
+/// ```
+///
 impl TermStyle {
-    gen_attr_fns!([fg, ForegroundColor, Color], [bg, BackgroundColor, Color]);
+    gen_attr_fns!(
+        [fg, ForegroundColor, Color],
+        [bg, BackgroundColor, Color]
+    );
 }
 
 // Internal: use carefully

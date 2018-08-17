@@ -17,6 +17,7 @@ macro_rules! gen_idents {
         mashup! { $(
                 m1["has" $t] = has_ $t;
                 m1["unset" $t] = unset_ $t;
+                m1["add" $t] = add_ $t;
                 m1["with" $t] = with_ $t;
                 m1["without" $t] = without_ $t;
                 m2["has_exact" $t] = has_exact_ $t;
@@ -32,25 +33,56 @@ macro_rules! gen_idents {
 macro_rules! gen_attr_fns {
     ($([$t:ident, $v:ident]),*) => (
         m1! { $(
-                pub fn $t() -> Self {
-                    Self::from([Attr::$v])
-                }
+                gen_fn_with_doc!(
+                    concat!("Equivalent to `TermStyle::from([`[`Attr::", stringify!($v), "`]`])`."),
+                    pub fn $t() -> Self {
+                        Self::from([Attr::$v])
+                    }
+                );
 
-                pub fn "has" $t(&self) -> bool {
-                    self.has_exact_attr(Attr::$v)
-                }
+                gen_fn_with_doc!(
+                    concat!("Equivalent to self.[`has_exact_attr`]`(`[`Attr::", stringify!($v), "`]`)`.\n\n",
+                    "Or self.[`has_variant_attr`]`(`[`Attr::", stringify!($v), "`]`)`.\n\n",
+                    "The result is the same because [`Attr::", stringify!($v), "`] has no data.\n\n",
+                    "[`has_exact_attr`]: TermStyle::has_exact_attr\n",
+                    "[`has_variant_attr`]: TermStyle::has_variant_attr"),
+                    pub fn "has" $t(&self) -> bool {
+                        self.has_exact_attr(Attr::$v)
+                    }
+                );
 
-                pub fn "unset" $t(&mut self){
-                    self.unset_exact_attr(Attr::$v);
-                }
+                gen_fn_with_doc!(
+                    concat!("Equivalent to self.[`add_attr`]`(`[`Attr::", stringify!($v), "`]`)`.\n\n",
+                    "[`add_attr`]: TermStyle::add_attr"),
+                    pub fn "add" $t(&mut self) {
+                        self.add_attr(Attr::$v);
+                    }
+                );
 
-                pub fn "with" $t(self) -> Self {
-                    self.with_attr(Attr::$v)
-                }
+                chaining_fn!(
+                    TermStyle, "add" $t,
+                    pub fn "with" $t(self) -> Self {
+                        self.with_attr(Attr::$v)
+                    }
+                );
 
-                pub fn "without" $t(self) -> Self {
-                    self.without_exact_attr(Attr::$v)
-                }
+                gen_fn_with_doc!(
+                    concat!("Equivalent to self.[`unset_exact_attr`]`(`[`Attr::", stringify!($v), "`]`)`.\n\n",
+                    "Or self.[`unset_variant_attr`]`(`[`Attr::", stringify!($v), "`]`)`.\n\n",
+                    "The result is the same because [`Attr::", stringify!($v), "`] has no data.\n\n",
+                    "[`unset_exact_attr`]: TermStyle::unset_exact_attr\n",
+                    "[`unset_variant_attr`]: TermStyle::unset_variant_attr"),
+                    pub fn "unset" $t(&mut self) {
+                        self.unset_exact_attr(Attr::$v);
+                    }
+                );
+
+                chaining_fn!(
+                    TermStyle, "unset" $t,
+                    pub fn "without" $t(self) -> Self {
+                        self.without_exact_attr(Attr::$v)
+                    }
+                );
             )* }
     );
 
@@ -66,6 +98,10 @@ macro_rules! gen_attr_fns {
 
                 pub fn "unset" $t(&mut self) {
                     self.unset_variant_attr(Attr::$v(Default::default()))
+                }
+
+                pub fn "add" $t(&mut self, arg: $arg_ty) {
+                    self.add_attr(Attr::$v(arg));
                 }
 
                 pub fn "with" $t(self, arg: $arg_ty) -> Self {
