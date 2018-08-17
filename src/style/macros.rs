@@ -18,12 +18,13 @@ macro_rules! gen_idents {
                 m1["has" $t] = has_ $t;
                 m1["unset" $t] = unset_ $t;
                 m1["add" $t] = add_ $t;
+                m1["or" $t] = or_ $t;
+                m1["with_ored" $t] = with_ored_ $t;
                 m1["with" $t] = with_ $t;
                 m1["without" $t] = without_ $t;
                 m2["has_exact" $t] = has_exact_ $t;
                 m2["unset_exact" $t] = unset_exact_ $t;
                 m2["without_exact" $t] = without_exact_ $t;
-                m2["with_ored" $t] = with_ored_ $t;
                 m3["attr" $t] = $t _attr;
                 m3["style" $t] = $t _style;
         )* }
@@ -34,26 +35,22 @@ macro_rules! gen_attr_fns {
     ($([$t:ident, $v:ident]),*) => (
         m1! { $(
                 gen_fn_with_doc!(
-                    concat!("Equivalent to `TermStyle::from([`[`Attr::", stringify!($v), "`]`])`."),
+                    concat!("Create a new [`TermStyle`] with [`Attr::", stringify!($v), "`] set.\n\n",
+                    "This is equivalent to `TermStyle::from([`[`Attr::", stringify!($v), "`]`])`."),
                     pub fn $t() -> Self {
                         Self::from([Attr::$v])
                     }
                 );
 
                 gen_fn_with_doc!(
-                    concat!("Equivalent to self.[`has_exact_attr`]`(`[`Attr::", stringify!($v), "`]`)`.\n\n",
-                    "Or self.[`has_variant_attr`]`(`[`Attr::", stringify!($v), "`]`)`.\n\n",
-                    "The result is the same because [`Attr::", stringify!($v), "`] has no data.\n\n",
-                    "[`has_exact_attr`]: TermStyle::has_exact_attr\n",
-                    "[`has_variant_attr`]: TermStyle::has_variant_attr"),
+                    concat!("Check if [`Attr::", stringify!($v), "`] is set in style."),
                     pub fn "has" $t(&self) -> bool {
                         self.has_exact_attr(Attr::$v)
                     }
                 );
 
                 gen_fn_with_doc!(
-                    concat!("Equivalent to self.[`add_attr`]`(`[`Attr::", stringify!($v), "`]`)`.\n\n",
-                    "[`add_attr`]: TermStyle::add_attr"),
+                    concat!("Set/Add [`Attr::", stringify!($v), "`] to style."),
                     pub fn "add" $t(&mut self) {
                         self.add_attr(Attr::$v);
                     }
@@ -67,11 +64,7 @@ macro_rules! gen_attr_fns {
                 );
 
                 gen_fn_with_doc!(
-                    concat!("Equivalent to self.[`unset_exact_attr`]`(`[`Attr::", stringify!($v), "`]`)`.\n\n",
-                    "Or self.[`unset_variant_attr`]`(`[`Attr::", stringify!($v), "`]`)`.\n\n",
-                    "The result is the same because [`Attr::", stringify!($v), "`] has no data.\n\n",
-                    "[`unset_exact_attr`]: TermStyle::unset_exact_attr\n",
-                    "[`unset_variant_attr`]: TermStyle::unset_variant_attr"),
+                    concat!("Unset/Remove [`Attr::", stringify!($v), "`] from style."),
                     pub fn "unset" $t(&mut self) {
                         self.unset_exact_attr(Attr::$v);
                     }
@@ -88,29 +81,65 @@ macro_rules! gen_attr_fns {
 
     ($([$t:ident, $v:ident, $arg_ty:ty]),*) => (
         m1! { $(
-                pub fn $t(arg: $arg_ty) -> Self {
-                    Self::from([Attr::$v(arg)])
-                }
+                gen_fn_with_doc!(
+                    concat!("Create a new [`TermStyle`] with [`Attr::", stringify!($v), "`]`(arg)` set.\n\n",
+                    "This is equivalent to `TermStyle::from([`[`Attr::", stringify!($v), "`]`(arg) ])`."),
+                    pub fn $t(arg: $arg_ty) -> Self {
+                        Self::from([Attr::$v(arg)])
+                    }
+                );
 
-                pub fn "has" $t(&self) -> bool {
-                    self.has_variant_attr(Attr::$v(Default::default()))
-                }
+                gen_fn_with_doc!(
+                    concat!("Check if [`Attr::", stringify!($v), "`]`(val)` is set in style.\n",
+                            "where `val` can be any value of [`", stringify!($arg_ty) ,"`]."),
+                    pub fn "has" $t(&self) -> bool {
+                        self.has_variant_attr(Attr::$v(Default::default()))
+                    }
+                );
 
-                pub fn "unset" $t(&mut self) {
-                    self.unset_variant_attr(Attr::$v(Default::default()))
-                }
+                gen_fn_with_doc!(
+                    concat!("Set/Add [`Attr::", stringify!($v), "`]`(arg)` to style."),
+                    pub fn "add" $t(&mut self, arg: $arg_ty) {
+                        self.add_attr(Attr::$v(arg));
+                    }
+                );
 
-                pub fn "add" $t(&mut self, arg: $arg_ty) {
-                    self.add_attr(Attr::$v(arg));
-                }
+                gen_fn_with_doc!(
+                    concat!("Set/Add [`Attr::", stringify!($v), "`]`(arg)` to style,\n",
+                    "if [`Attr::", stringify!($v), "`] is not already set."),
+                    pub fn "or" $t(&mut self, arg: $arg_ty) {
+                        self.or_attr(Attr::$v(arg))
+                    }
+                );
 
-                pub fn "with" $t(self, arg: $arg_ty) -> Self {
-                    self.with_attr(Attr::$v(arg))
-                }
+                chaining_fn!(
+                    TermStyle, "add" $t,
+                    pub fn "with" $t(self, arg: $arg_ty) -> Self {
+                        self.with_attr(Attr::$v(arg))
+                    }
+                );
 
-                pub fn "without" $t(self) -> Self {
-                    self.without_variant_attr(Attr::$v(Default::default()))
-                }
+                chaining_fn!(
+                    TermStyle, "or" $t,
+                    pub fn "with_ored" $t(self, arg: $arg_ty) -> Self {
+                        self.with_ored_attr(Attr::$v(arg))
+                    }
+                );
+
+                gen_fn_with_doc!(
+                    concat!("Unset/Remove [`Attr::", stringify!($v), "`]`(val)` from style.\n",
+                            "where `val` can be any value of [`", stringify!($arg_ty) ,"`]."),
+                    pub fn "unset" $t(&mut self) {
+                        self.unset_variant_attr(Attr::$v(Default::default()))
+                    }
+                );
+
+                chaining_fn!(
+                    TermStyle, "unset" $t,
+                    pub fn "without" $t(self) -> Self {
+                        self.without_variant_attr(Attr::$v(Default::default()))
+                    }
+                );
         )* }
 
         m2! { $(
@@ -122,13 +151,12 @@ macro_rules! gen_attr_fns {
                     self.unset_exact_attr(Attr::$v(arg))
                 }
 
-                pub fn "with_ored" $t(self, arg: $arg_ty) -> Self {
-                    self.with_ored_attr(Attr::$v(arg))
-                }
-
-                pub fn "without_exact" $t(self, arg: $arg_ty) -> Self {
-                    self.without_exact_attr(Attr::$v(arg))
-                }
+                chaining_fn!(
+                    TermStyle, "unset_exact" $t,
+                    pub fn "without_exact" $t(self, arg: $arg_ty) -> Self {
+                        self.without_exact_attr(Attr::$v(arg))
+                    }
+                );
             )* }
     );
 
