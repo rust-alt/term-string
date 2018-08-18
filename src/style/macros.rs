@@ -33,14 +33,17 @@ macro_rules! gen_idents {
 
 macro_rules! gen_attr_fns {
     ($([$t:ident, $v:ident]),*) => (
+        $(
+            gen_fn_with_doc!(
+                concat!("Create a new [`TermStyle`] with [`Attr::", stringify!($v), "`] set.\n\n",
+                "This is equivalent to `TermStyle::from([`[`Attr::", stringify!($v), "`]`])`."),
+                pub fn $t() -> Self {
+                    Self::from([Attr::$v])
+                }
+            );
+        )*
+
         m_has! { $(
-                gen_fn_with_doc!(
-                    concat!("Create a new [`TermStyle`] with [`Attr::", stringify!($v), "`] set.\n\n",
-                    "This is equivalent to `TermStyle::from([`[`Attr::", stringify!($v), "`]`])`."),
-                    pub fn $t() -> Self {
-                        Self::from([Attr::$v])
-                    }
-                );
 
                 gen_fn_with_doc!(
                     concat!("Check if [`Attr::", stringify!($v), "`] is set in style."),
@@ -49,6 +52,7 @@ macro_rules! gen_attr_fns {
                     }
                 );
             )* }
+
         m_op! { $(
                 gen_fn_with_doc!(
                     concat!("Set/Add [`Attr::", stringify!($v), "`] to style."),
@@ -82,25 +86,30 @@ macro_rules! gen_attr_fns {
     );
 
     ($([$t:ident, $v:ident, $arg_ty:ty]),*) => (
-        m_has! { $(
-                gen_fn_with_doc!(
-                    concat!("Create a new [`TermStyle`] with [`Attr::", stringify!($v), "`]`(arg)` set.\n\n",
-                    "This is equivalent to `TermStyle::from([`[`Attr::", stringify!($v), "`]`(arg) ])`."),
-                    pub fn $t(arg: $arg_ty) -> Self {
-                        Self::from([Attr::$v(arg)])
-                    }
-                );
+        $(
+            gen_fn_with_doc!(
+                concat!("Create a new [`TermStyle`] with [`Attr::", stringify!($v), "`]`(arg)` set.\n\n",
+                "This is equivalent to `TermStyle::from([`[`Attr::", stringify!($v), "`]`(arg) ])`."),
+                pub fn $t(arg: $arg_ty) -> Self {
+                    Self::from([Attr::$v(arg)])
+                }
+            );
+        )*
 
+        m_has! { $(
                 gen_fn_with_doc!(
                     concat!("Check if [`Attr::", stringify!($v), "`]`(val)` is set in style.\n",
                             "where `val` can be any value of [`", stringify!($arg_ty) ,"`]."),
                     pub fn "has" $t(&self) -> bool {
                         self.has_variant_attr(Attr::$v(Default::default()))
                     }
+                );
 
-                pub fn "has_exact" $t(&self, arg: $arg_ty) -> bool {
-                    self.has_exact_attr(Attr::$v(arg))
-                }
+                gen_fn_with_doc!(
+                    concat!("Check if [`Attr::", stringify!($v), "`]`(arg)` is set in style."),
+                    pub fn "has_exact" $t(&self, arg: $arg_ty) -> bool {
+                        self.has_exact_attr(Attr::$v(arg))
+                    }
                 );
             )* }
         m_op! { $(
@@ -111,18 +120,18 @@ macro_rules! gen_attr_fns {
                     }
                 );
 
+                chaining_fn!(
+                    TermStyle, "add" $t,
+                    pub fn "with" $t(self, arg: $arg_ty) -> Self {
+                        self.with_attr(Attr::$v(arg))
+                    }
+                );
+
                 gen_fn_with_doc!(
                     concat!("Set/Add [`Attr::", stringify!($v), "`]`(arg)` to style,\n",
                     "if [`Attr::", stringify!($v), "`] is not already set."),
                     pub fn "or" $t(&mut self, arg: $arg_ty) {
                         self.or_attr(Attr::$v(arg))
-                    }
-                );
-
-                chaining_fn!(
-                    TermStyle, "add" $t,
-                    pub fn "with" $t(self, arg: $arg_ty) -> Self {
-                        self.with_attr(Attr::$v(arg))
                     }
                 );
 
@@ -149,9 +158,12 @@ macro_rules! gen_attr_fns {
                     }
                 );
 
-                pub fn "unset_exact" $t(&mut self, arg: $arg_ty) {
-                    self.unset_exact_attr(Attr::$v(arg))
-                }
+                gen_fn_with_doc!(
+                    concat!("Unset/Remove [`Attr::", stringify!($v), "`]`(arg)` from style."),
+                            pub fn "unset_exact" $t(&mut self, arg: $arg_ty) {
+                                self.unset_exact_attr(Attr::$v(arg))
+                            }
+                );
 
                 chaining_fn!(
                     TermStyle, "unset_exact" $t,
