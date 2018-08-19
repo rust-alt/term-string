@@ -16,7 +16,7 @@ mod tests;
 #[macro_use]
 mod macros;
 
-pub use term::{terminfo, Terminal};
+pub use term::{terminfo::{TermInfo, TerminfoTerminal}, Terminal};
 
 #[cfg(windows)]
 pub use term::WinConsole;
@@ -528,7 +528,17 @@ gen_idents!(print, eprint, stdout, stderr);
 /// `TermWrite` is bound to `Write + Send` on Windows, and only `Write`
 /// on other platforms.
 impl TermString {
-    /// Write [`TermString`] to `out` without styling.
+    fn term_or_w<W>(out: W) -> (Option<TerminfoTerminal<W>>, Option<W>)
+    where
+        W: TermWrite,
+    {
+        match TermInfo::from_env() {
+            Ok(ti) => (Some(TerminfoTerminal::new_with_terminfo(out, ti)), None),
+            Err(_) => (None, Some(out)),
+        }
+    }
+
+    /// Write [`TermString`] to `out_plain` without styling.
     ///
     /// # Examples
     /// ``` rust
@@ -538,14 +548,9 @@ impl TermString {
     ///
     /// // This will write "some bold text" to stdout without
     /// // any formatting, so not really bold.
-    /// ts.write_plain(&|| std::io::stdout());
+    /// ts.write_plain(std::io::stdout());
     /// ```
-    pub fn write_plain<F, W>(&self, out: &F)
-    where
-        W: TermWrite,
-        F: Fn() -> W,
-    {
-        let mut out_plain = out();
+    pub fn write_plain<W: TermWrite>(&self, mut out_plain: W) {
         for e in &self.elements {
             e.write_plain(&mut out_plain);
         }
@@ -558,14 +563,15 @@ impl TermString {
         F: Fn() -> W,
     {
         let mut out_plain = out();
+        let out_styled = out();
 
-        match terminfo::TerminfoTerminal::new(out()) {
-            Some(mut out_term) => {
+        match Self::term_or_w(out_styled) {
+            (Some(mut out_term), _) => {
                 for e in &self.elements {
                     e.write_styled(&mut out_term, &mut out_plain);
                 }
             },
-            None => self.write_plain(out),
+            (None, _) => self.write_plain(&mut out_plain),
         }
     }
 
@@ -576,23 +582,22 @@ impl TermString {
         F: Fn() -> W,
     {
         let mut out_plain = out();
+        let out_styled = out();
 
-        match (
-            terminfo::TerminfoTerminal::new(out()),
-            WinConsole::new(out()),
-        ) {
-            (Some(mut out_term), _) => {
+        let term_res = match term_or_w(out_styled) {
+            (Some(term), _) => Ok(term),
+            (None, out) => WinConsole::new(out),
+        };
+
+        match term_res {
+            Ok(mut out_term) => {
                 for e in &self.elements {
                     e.write_styled(&mut out_term, &mut out_plain);
                 }
             },
-            (_, Ok(mut out_term)) => {
-                for e in &self.elements {
-                    e.write_styled(&mut out_term, &mut out_plain);
-                }
-            },
-            _ => self.write_plain(out),
+            Err(_) => self.write_plain(&mut out_plain),
         }
+
     }
 
     /// Write [`TermString`] to `out` with styling.

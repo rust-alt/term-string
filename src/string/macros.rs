@@ -44,11 +44,11 @@ macro_rules! gen_print_fns {
                 ),
                 pub fn $print "plain"(&self) {
                     #[cfg(windows)]
-                    self.write_plain(&|| io::$dev());
+                    self.write_plain(io::$dev());
                     #[cfg(not(windows))]
                     {
                         let $dev = io::$dev();
-                        self.write_plain(&|| $dev.lock());
+                        self.write_plain($dev.lock());
                     }
                 }
             );
