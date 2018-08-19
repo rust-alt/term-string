@@ -584,20 +584,22 @@ impl TermString {
         let mut out_plain = out();
         let out_styled = out();
 
-        let term_res = match term_or_w(out_styled) {
-            (Some(term), _) => Ok(term),
-            (None, out) => WinConsole::new(out),
-        };
-
-        match term_res {
-            Ok(mut out_term) => {
+        match Self::term_or_w(out_styled) {
+            (Some(mut out_term), _) => {
                 for e in &self.elements {
                     e.write_styled(&mut out_term, &mut out_plain);
                 }
             },
-            Err(_) => self.write_plain(&mut out_plain),
+            (None, Some(out)) => match WinConsole::new(out) {
+                Ok(mut out_term) => {
+                    for e in &self.elements {
+                        e.write_styled(&mut out_term, &mut out_plain);
+                    }
+                },
+                Err(_) => self.write_plain(&mut out_plain),
+            },
+            (None, None) => unreachable!(),
         }
-
     }
 
     /// Write [`TermString`] to `out` with styling.
