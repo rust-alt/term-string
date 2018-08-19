@@ -277,11 +277,47 @@ impl TermStyle {
         self._remove_attr(attr, false);
     }
 
+    /// Set/Add attr to [`TermStyle`], unless the same variant
+    /// has been already set.
+    ///
+    /// # Examples
+    /// ``` rust
+    /// use term_string::{TermStyle, Attr, color};
+    ///
+    /// let mut style = TermStyle::default();
+    ///
+    /// // Add red background
+    /// style.or_attr(Attr::BackgroundColor(color::RED));
+    /// assert!(style.has_exact_bg(color::RED));
+    ///
+    /// // Add green background if background is not already set
+    /// style.or_attr(Attr::BackgroundColor(color::GREEN));
+    /// // Since background was already set, it's still red
+    /// assert!(style.has_exact_bg(color::RED));
+    /// ```
     pub fn or_attr(&mut self, attr: Attr) {
         // replace = false
         self._add_attr(attr, false);
     }
 
+    /// Set/Add attr to [`TermStyle`], overriding the same variant
+    /// if it was already set.
+    ///
+    /// # Examples
+    /// ``` rust
+    /// use term_string::{TermStyle, Attr, color};
+    ///
+    /// let mut style = TermStyle::default();
+    ///
+    /// // Add red background
+    /// style.add_attr(Attr::BackgroundColor(color::RED));
+    /// assert!(style.has_exact_bg(color::RED));
+    ///
+    /// // Add green background, overriding already set background
+    /// style.add_attr(Attr::BackgroundColor(color::GREEN));
+    /// // background will always be green after the above line
+    /// assert!(style.has_exact_bg(color::GREEN));
+    /// ```
     pub fn add_attr(&mut self, attr: Attr) {
         // replace = true
         self._add_attr(attr, true);
