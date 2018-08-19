@@ -47,7 +47,7 @@ gen_idents!(
     add
 );
 
-/// Helper methods for setting, unsetting, and checking [`Attr`] variants
+/// Convenient methods for setting, unsetting, and checking [`Attr`] variants
 /// in a [`TermStyle`] variable.
 ///
 /// This block has helper methods for [`Attr`] variants with no data:
@@ -73,7 +73,7 @@ impl TermStyle {
     );
 }
 
-/// Helper methods for setting, unsetting, and checking [`Attr`] variants
+/// Convenient methods for setting, unsetting, and checking [`Attr`] variants
 /// in a [`TermStyle`] variable.
 ///
 /// This block has helper methods for [`Attr`] variants with `bool` data:
@@ -114,7 +114,7 @@ impl TermStyle {
     );
 }
 
-/// Helper methods for setting, unsetting, and checking [`Attr`] variants
+/// Convenient methods for setting, unsetting, and checking [`Attr`] variants
 /// in a [`TermStyle`] variable.
 ///
 /// This block has helper methods for [`Attr`] variants with [`Color`] data:
@@ -206,20 +206,73 @@ impl TermStyle {
     }
 }
 
-// Public: attr methods
+/// Methods that take [`Attr`] arguments.
+/// Note that [`Attr`] is a [`Copy`] enum type.
 impl TermStyle {
+    /// [`TermStyle`] has attr set. Exact is referring to
+    /// attr's data, if exists, being included in
+    /// the check.
+    ///
+    /// # Examples
+    /// ``` rust
+    /// use term_string::{TermStyle, Attr};
+    ///
+    /// let style = TermStyle::underline(true);
+    /// assert!(style.has_exact_attr(Attr::Underline(true)));
+    /// assert!(!style.has_exact_attr(Attr::Underline(false)));
+    /// ```
     pub fn has_exact_attr(&self, attr: Attr) -> bool {
         self._attr_match_pos(attr, true).is_some()
     }
 
+    /// [`TermStyle`] has attr set. Variant is referring to
+    /// attr's data, if exists, being excluded from
+    /// the check.
+    ///
+    /// # Examples
+    /// ``` rust
+    /// use term_string::{TermStyle, Attr};
+    ///
+    /// let style = TermStyle::underline(true);
+    /// assert!(style.has_variant_attr(Attr::Underline(true)));
+    /// assert!(style.has_variant_attr(Attr::Underline(false)));
+    /// ```
     pub fn has_variant_attr(&self, attr: Attr) -> bool {
         self._attr_match_pos(attr, false).is_some()
     }
 
+    /// Unset/Remove the exact [`Attr`] from [`TermStyle`].
+    ///
+    /// # Examples
+    /// ``` rust
+    /// use term_string::{TermStyle, Attr};
+    ///
+    /// let mut style = TermStyle::underline(true);
+    ///
+    /// // this does nothing, no exact match
+    /// style.unset_exact_attr(Attr::Underline(false));
+    /// assert_ne!(style, TermStyle::default());
+    ///
+    /// // this unsets underline, exact match
+    /// style.unset_exact_attr(Attr::Underline(true));
+    /// assert_eq!(style, TermStyle::default());
+    /// ```
     pub fn unset_exact_attr(&mut self, attr: Attr) {
         self._remove_attr(attr, true);
     }
 
+    /// Unset/Remove the variant [`Attr`] from [`TermStyle`].
+    ///
+    /// # Examples
+    /// ``` rust
+    /// use term_string::{TermStyle, Attr};
+    ///
+    /// let mut style = TermStyle::underline(true);
+    ///
+    /// // this unsets underline, even without exact match
+    /// style.unset_variant_attr(Attr::Underline(false));
+    /// assert_eq!(style, TermStyle::default());
+    /// ```
     pub fn unset_variant_attr(&mut self, attr: Attr) {
         self._remove_attr(attr, false);
     }

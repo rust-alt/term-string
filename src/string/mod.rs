@@ -371,7 +371,7 @@ impl TermString {
 /// A corresponding method from [`TermStyle`] is used on each internal element
 /// of the [`TermString`].
 ///
-/// Remember that [`TermStyle`] is a `Copy` type.
+/// Remember that [`TermStyle`] is a [`Copy`] type.
 impl TermString {
     /// Set the styles of all internal elements of the [`TermString`] to this style.
     ///
