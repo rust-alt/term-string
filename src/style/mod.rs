@@ -206,7 +206,7 @@ impl TermStyle {
     }
 }
 
-/// Methods that take [`Attr`] arguments.
+/// Methods that take [`Attr`] as an argument.
 /// Note that [`Attr`] is a [`Copy`] enum type.
 impl TermStyle {
     /// [`TermStyle`] has attr set. Exact is referring to
@@ -329,7 +329,31 @@ impl TermStyle {
     gen_with_fn!(attr, with_ored_attr, or_attr);
 }
 
-// Public: style methods
+/// Methods that take `Into<Self>` as an argument. So you can either
+/// pass [`TermStyle`], or [`Attr`] arrays or slices.
+///
+/// These methods mirror the behavior of the methods above that take
+/// a single [`Attr`] argument, except they apply to all attributes set
+/// in the style passed as argument.
+///
+/// # Examples
+///
+/// ``` rust
+/// use term_string::{TermStyle, Attr};
+///
+/// let st1 = TermStyle::default()
+///   .with_attr(Attr::Bold)
+///   .with_attr(Attr::Underline(true));
+///
+/// let st2 = TermStyle::default()
+///   .with_style([Attr::Bold, Attr::Underline(true)]);
+///
+/// assert_eq!(st1, st2);
+/// assert!(st1.has_exact_style([Attr::Bold, Attr::Underline(true)]));
+/// assert!(st2.has_exact_style(st1));
+///
+/// ```
+///
 impl TermStyle {
     gen_from_attr_fns!(has_style, has_exact, has_variant);
     gen_from_attr_fns!(style, unset_exact, unset_variant, or, add);
@@ -338,11 +362,30 @@ impl TermStyle {
     gen_with_fn!(style, with_ored_style, or_style);
     gen_with_fn!(style, without_exact_style, unset_exact_style);
     gen_with_fn!(style, without_variant_style, unset_variant_style);
+}
 
+/// Other methods
+impl TermStyle {
+    /// Resets style to default.
     pub fn reset(&mut self) {
         *self = Self::default();
     }
 
+    /// Checks if both styles have the same exact attributes set.
+    /// This is used for implementing [`PartialEq`], so you should
+    /// probably use that instead.
+    ///
+    /// # Examples
+    ///
+    /// ``` rust
+    /// use term_string::{TermStyle, Attr};
+    ///
+    /// let st1 = TermStyle::bold() + TermStyle::underline(true);
+    /// let st2 = st1 + TermStyle::reverse();
+    /// assert!(st1.eq_style([Attr::Underline(true), Attr::Bold]));
+    /// // Needless to say, subset != equal
+    /// assert!(!st2.eq_style(st1));
+    /// ```
     pub fn eq_style<IS>(&self, other: IS) -> bool
     where
         IS: Into<Self>,
@@ -351,6 +394,19 @@ impl TermStyle {
         self.has_exact_style(other) && other.has_exact_style(*self)
     }
 
+    /// Checks if both styles have the same exact attribute variants set.
+    ///
+    /// # Examples
+    ///
+    /// ``` rust
+    /// use term_string::{TermStyle, Attr};
+    ///
+    /// let st1 = TermStyle::bold() + TermStyle::underline(true);
+    /// let st2 = st1 + TermStyle::reverse();
+    /// assert!(st1.eq_style([Attr::Underline(true), Attr::Bold]));
+    /// // Same variant, different data still counts as equal
+    /// assert!(st1.eq_style([Attr::Underline(false), Attr::Bold]));
+    /// ```
     pub fn eq_variant_style<IS>(&self, other: IS) -> bool
     where
         IS: Into<Self>,
@@ -366,6 +422,7 @@ impl PartialEq for TermStyle {
     }
 }
 
+/// Get a [`TermStyle`] from [`Attr`] arrays or slices.
 impl<A> From<A> for TermStyle
 where
     A: Borrow<[Attr]>,
@@ -377,6 +434,10 @@ where
     }
 }
 
+/// Check out [`or_style()`] and [`or_attr()`].
+///
+/// [`or_style()`]: TermStyle::or_style
+/// [`or_attr()`]: TermStyle::or_attr
 impl<IS> BitOr<IS> for TermStyle
 where
     IS: Into<Self>,
@@ -396,6 +457,10 @@ where
     }
 }
 
+/// Check out [`add_style()`] and [`add_attr()`].
+///
+/// [`add_style()`]: TermStyle::add_style
+/// [`add_attr()`]: TermStyle::add_attr
 impl<IS> Add<IS> for TermStyle
 where
     IS: Into<Self>,
@@ -415,6 +480,10 @@ where
     }
 }
 
+/// Check out [`unset_exact_style()`] and [`unset_exact_attr()`].
+///
+/// [`unset_exact_style()`]: TermStyle::unset_exact_style
+/// [`unset_exact_attr()`]: TermStyle::unset_exact_attr
 impl<IS> Sub<IS> for TermStyle
 where
     IS: Into<Self>,

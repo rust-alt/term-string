@@ -202,22 +202,30 @@ macro_rules! gen_with_fn {
 macro_rules! gen_from_attr_fns {
     (style, $($t:ident),*) => (
         m_a_s! { $(
-                pub fn "style" $t<IS>(&mut self, other: IS) where IS: Into<Self> {
-                    other.into().attrs.iter()
-                        .filter_map(|&attr| attr)
-                        .for_each(|attr| self."attr" $t(attr));
-                }
+                gen_fn_with_doc!(
+                    concat!("Apply [`", stringify!("attr" $t), "()`] to all [`Attr`]s set in other.\n\n",
+                    "[`", stringify!("attr" $t), "()`]:", " TermStyle::", stringify!("attr" $t)),
+                    pub fn "style" $t<IS>(&mut self, other: IS) where IS: Into<Self> {
+                        other.into().attrs.iter()
+                            .filter_map(|&attr| attr)
+                            .for_each(|attr| self."attr" $t(attr));
+                    }
+                );
         )* }
     );
 
     (has_style, $($t:ident),*) => (
         m_a_s! { $(
-                pub fn "style" $t<IS>(&self, other: IS) -> bool where IS: Into<Self> {
-                    other.into().attrs.iter()
-                        .filter_map(|&attr| attr)
-                        .map(|attr| self."attr" $t(attr))
-                        .find(|&has| !has).is_none()
-                }
+                gen_fn_with_doc!(
+                    concat!("Apply [`", stringify!("attr" $t), "()`] to all [`Attr`]s set in other.\n\n",
+                    "[`", stringify!("attr" $t), "()`]:", " TermStyle::", stringify!("attr" $t)),
+                    pub fn "style" $t<IS>(&self, other: IS) -> bool where IS: Into<Self> {
+                        other.into().attrs.iter()
+                            .filter_map(|&attr| attr)
+                            .map(|attr| self."attr" $t(attr))
+                            .find(|&has| !has).is_none()
+                    }
+                );
         )* }
     );
 }
