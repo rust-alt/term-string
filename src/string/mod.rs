@@ -589,7 +589,7 @@ impl TermString {
                     e.write_styled(&mut out_term);
                 }
             },
-            Either::B(out) => match console_or_w(out) {
+            Either::B(out) => match Self::console_or_w(out) {
                 Either::A(mut out_term) => {
                     for e in &self.elements {
                         e.write_styled(&mut out_term);
