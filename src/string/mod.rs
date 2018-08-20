@@ -317,7 +317,9 @@ impl TermString {
 
         let mut other_elements_iter = other.elements.into_iter();
 
-        if !self.elements.is_empty() {
+        if self.elements.is_empty() {
+            self.elements.extend(other_elements_iter);
+        } else {
             while let Some(next) = other_elements_iter.next() {
                 if next.style == self.elements.last().expect("impossible").style {
                     self.append_str(&*next.text);
@@ -326,8 +328,6 @@ impl TermString {
                     break;
                 }
             }
-            self.elements.extend(other_elements_iter);
-        } else {
             self.elements.extend(other_elements_iter);
         }
     }
