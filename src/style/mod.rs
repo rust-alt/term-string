@@ -403,9 +403,9 @@ impl TermStyle {
     ///
     /// let st1 = TermStyle::bold() + TermStyle::underline(true);
     /// let st2 = st1 + TermStyle::reverse();
-    /// assert!(st1.eq_style([Attr::Underline(true), Attr::Bold]));
+    /// assert!(st1.eq_variant_style([Attr::Underline(true), Attr::Bold]));
     /// // Same variant, different data still counts as equal
-    /// assert!(st1.eq_style([Attr::Underline(false), Attr::Bold]));
+    /// assert!(st1.eq_variant_style([Attr::Underline(false), Attr::Bold]));
     /// ```
     pub fn eq_variant_style<IS>(&self, other: IS) -> bool
     where
