@@ -1,5 +1,35 @@
 # term-string [![Travis Build Status](https://api.travis-ci.org/rust-alt/term-string.svg?branch=master)](https://travis-ci.org/rust-alt/term-string) [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/rust-alt/term-string?svg=true&branch=master)](https://ci.appveyor.com/project/MoSal/term-string)
 
+Provide a string and style types for terminal formatted output.
+
+This crate wraps around the `term` crate. And thus, supports both
+Terminfo terminals, and Windows consoles.
+
+## Examples
+
+``` rust
+// color is a re-exported module from term
+use term_string::color::{GREEN, RED};
+
+use term_string::{TermString, TermStyle};
+
+// Create term styles
+let style1 = TermStyle::bold() + TermStyle::fg(GREEN) + TermStyle::bg(RED);
+let style2 = TermStyle::underline(true);
+
+// Create term string from a style and a string value
+let mut ts = TermString::new(style1, "style");
+
+// "1" inherits style1
+ts+= "1";
+
+// " : " is un-styled
+ts += TermString::from(" : ");
+
+ts += TermString::new(style2, "This is text with style 2");
+
+ts.println();
+```
 
 ## Detailed Build Status
 

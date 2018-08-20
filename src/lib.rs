@@ -10,6 +10,9 @@
 */
 
 //! Provide a string and style types for terminal formatted output.
+//! 
+//! This crate wraps around the `term` crate. And thus, supports both
+//! Terminfo terminals, and Windows consoles.
 //!
 //! # Examples
 //!
