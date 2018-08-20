@@ -16,7 +16,10 @@ mod tests;
 #[macro_use]
 mod macros;
 
-pub use term::{terminfo::{TermInfo, TerminfoTerminal}, Terminal};
+pub use term::{
+    terminfo::{TermInfo, TerminfoTerminal},
+    Terminal,
+};
 
 #[cfg(windows)]
 pub use term::{WinConsole, WinConsoleInfo};
@@ -568,7 +571,6 @@ impl TermString {
 
     #[cfg(not(windows))]
     fn _write_styled<W: TermWrite>(&self, out: W) {
-
         match Self::term_or_w(out) {
             Either::A(mut out_term) => {
                 for e in &self.elements {
