@@ -4,7 +4,7 @@
 
 Provide a string and style types for terminal formatted output.
 
-# Why?
+## Why?
 
 I noticed that crates tend to either depend on `ansi_term` directly,
 and thus lack Windows console support, or include their own wrapping
