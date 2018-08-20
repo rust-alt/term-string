@@ -4,8 +4,14 @@
 
 Provide a string and style types for terminal formatted output.
 
-This crate wraps around the `term` crate. And thus, supports both
-Terminfo terminals, and the Windows console.
+# Why?
+
+I noticed that crates tend to either depend on `ansi_term` directly,
+and thus lack Windows console support, or include their own wrapping
+code around `term`.
+
+This crate is an attempt to create a nice usable wrap around `term`
+everyone can use.
 
 ## Examples
 
