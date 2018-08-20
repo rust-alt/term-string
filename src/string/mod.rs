@@ -73,7 +73,9 @@ impl TermStringElement {
         out.reset()?;
 
         for attr in self.style.attrs.iter().filter_map(|&attr| attr) {
-            out.attr(attr)?;
+            if out.supports_attr(attr) {
+                out.attr(attr)?;
+            }
         }
 
         write!(out, "{}", self.text)?;
