@@ -43,6 +43,13 @@ fn len() {
 }
 
 #[test]
+fn is_empty() {
+    let mut ts = Str::new(Sty::bold(), "");
+    ts += Str::new(Sty::underline(true), "");
+    assert!(ts.is_empty());
+}
+
+#[test]
 fn as_string() {
     let text1 = "Hello ";
     let text2 = "World!";
@@ -60,7 +67,9 @@ fn append_str() {
     let text2 = "World!";
     let style = Sty::bold();
 
-    let mut t_str = Str::new(style, text1);
+    let mut t_str = Str::default();
+    t_str.append_str("");
+    t_str += Str::new(style, text1);
     t_str.append_str(text2);
 
     let text = String::from(text1) + text2;
@@ -83,7 +92,8 @@ fn with_appended_str() {
 #[test]
 fn append_term_str() {
     let mut t_str1 = Str::default();
-    let t_str2 = Str::new(Sty::default(), " ");
+    let t_str2 = Str::new(Sty::default(), "  ");
+    t_str1.append_term_str(" ");
     t_str1.append_term_str(" ");
     assert_eq!(t_str1.elements, t_str2.elements);
 }

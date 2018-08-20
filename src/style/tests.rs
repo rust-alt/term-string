@@ -277,3 +277,15 @@ fn gen_attr_fns() {
     assert_eq!(style1b, style2b);
     assert_eq!(style1b.without_bold(), style2b.without_bold());
 }
+
+#[test]
+fn gen_attr_fns2() {
+    let mut style1 = Sty::default();
+    style1.add_bold();
+    style1.add_underline(true);
+    style1.or_fg(RED);
+    let style2 = Sty::bold() + Sty::underline(true) | Sty::fg(RED);
+    assert_eq!(style1, style2);
+    style1.unset_exact_fg(RED);
+    assert_eq!(style1, style2.without_exact_fg(RED));
+}
