@@ -19,7 +19,7 @@ mod macros;
 pub use term::{terminfo::{TermInfo, TerminfoTerminal}, Terminal};
 
 #[cfg(windows)]
-pub use term::WinConsole;
+pub use term::{WinConsole, WinConsoleInfo};
 
 use isatty;
 
@@ -29,6 +29,11 @@ use std::ops::{Add, AddAssign};
 
 use error::Result;
 use style::TermStyle;
+
+enum Either<T, U> {
+    A(T),
+    B(U),
+}
 
 #[cfg(not(windows))]
 pub trait TermWrite: Write {}
@@ -78,20 +83,20 @@ impl TermStringElement {
         Ok(())
     }
 
-    fn write_plain<W>(&self, out_plain: &mut W)
+    fn write_plain<W>(&self, out: &mut W)
     where
         W: TermWrite,
     {
-        write!(out_plain, "{}", &self.text).expect("should never happen");
+        write!(out, "{}", &self.text).expect("should never happen");
     }
 
-    fn write_styled<W, TERM>(&self, out_term: &mut TERM, out_plain: &mut W)
+    fn write_styled<W, TERM>(&self, out_term: &mut TERM)
     where
         W: TermWrite,
         TERM: Terminal<Output = W>,
     {
         if self.try_write_styled(out_term).is_err() {
-            self.write_plain(out_plain);
+            self.write_plain(out_term.get_mut());
         }
     }
 }
@@ -528,17 +533,22 @@ gen_idents!(print, eprint, stdout, stderr);
 /// `TermWrite` is bound to `Write + Send` on Windows, and only `Write`
 /// on other platforms.
 impl TermString {
-    fn term_or_w<W>(out: W) -> (Option<TerminfoTerminal<W>>, Option<W>)
-    where
-        W: TermWrite,
-    {
+    fn term_or_w<W: TermWrite>(out: W) -> Either<TerminfoTerminal<W>, W> {
         match TermInfo::from_env() {
-            Ok(ti) => (Some(TerminfoTerminal::new_with_terminfo(out, ti)), None),
-            Err(_) => (None, Some(out)),
+            Ok(ti) => Either::A(TerminfoTerminal::new_with_terminfo(out, ti)),
+            Err(_) => Either::B(out),
         }
     }
 
-    /// Write [`TermString`] to `out_plain` without styling.
+    #[cfg(windows)]
+    fn console_or_w<W: TermWrite>(out: W) -> Either<WinConsole<W>, W> {
+        match WinConsoleInfo::from_env() {
+            Ok(ci) => Either::A(WinConsole::new_with_consoleinfo(out, ci)),
+            Err(_) => Either::B(out),
+        }
+    }
+
+    /// Write [`TermString`] to `out` without styling.
     ///
     /// # Examples
     /// ``` rust
@@ -550,55 +560,41 @@ impl TermString {
     /// // any formatting, so not really bold.
     /// ts.write_plain(std::io::stdout());
     /// ```
-    pub fn write_plain<W: TermWrite>(&self, mut out_plain: W) {
+    pub fn write_plain<W: TermWrite>(&self, mut out: W) {
         for e in &self.elements {
-            e.write_plain(&mut out_plain);
+            e.write_plain(&mut out);
         }
     }
 
     #[cfg(not(windows))]
-    fn _write_styled<F, W>(&self, out: &F)
-    where
-        W: TermWrite,
-        F: Fn() -> W,
-    {
-        let mut out_plain = out();
-        let out_styled = out();
+    fn _write_styled<W: TermWrite>(&self, out: W) {
 
-        match Self::term_or_w(out_styled) {
-            (Some(mut out_term), _) => {
+        match Self::term_or_w(out) {
+            Either::A(mut out_term) => {
                 for e in &self.elements {
-                    e.write_styled(&mut out_term, &mut out_plain);
+                    e.write_styled(&mut out_term);
                 }
             },
-            (None, _) => self.write_plain(&mut out_plain),
+            Either::B(mut out) => self.write_plain(&mut out),
         }
     }
 
     #[cfg(windows)]
-    fn _write_styled<F, W>(&self, out: &F)
-    where
-        W: TermWrite,
-        F: Fn() -> W,
-    {
-        let mut out_plain = out();
-        let out_styled = out();
-
-        match Self::term_or_w(out_styled) {
-            (Some(mut out_term), _) => {
+    fn _write_styled<W: TermWrite>(&self, out: W) {
+        match Self::term_or_w(out) {
+            Either::A(mut out_term) => {
                 for e in &self.elements {
-                    e.write_styled(&mut out_term, &mut out_plain);
+                    e.write_styled(&mut out_term);
                 }
             },
-            (None, Some(out)) => match WinConsole::new(out) {
-                Ok(mut out_term) => {
+            Either::B(out) => match console_or_w(out) {
+                Either::A(mut out_term) => {
                     for e in &self.elements {
-                        e.write_styled(&mut out_term, &mut out_plain);
+                        e.write_styled(&mut out_term);
                     }
                 },
-                Err(_) => self.write_plain(&mut out_plain),
+                Either::B(mut out) => self.write_plain(&mut out),
             },
-            (None, None) => unreachable!(),
         }
     }
 
@@ -625,13 +621,9 @@ impl TermString {
     ///
     /// // This will write "some bold text" to stdout with formatting,
     /// // even if stdout is not a tty
-    /// ts.write_styled(&|| std::io::stdout());
+    /// ts.write_styled(std::io::stdout());
     /// ```
-    pub fn write_styled<F, W>(&self, out: &F)
-    where
-        W: TermWrite,
-        F: Fn() -> W,
-    {
+    pub fn write_styled<W: TermWrite>(&self, out: W) {
         self._write_styled(out)
     }
 

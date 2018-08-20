@@ -73,11 +73,11 @@ macro_rules! gen_print_fns {
                 ),
                 pub fn $print "styled"(&self) {
                     #[cfg(windows)]
-                    self.write_styled(&|| io::$dev());
+                    self.write_styled(io::$dev());
                     #[cfg(not(windows))]
                     {
                         let $dev = io::$dev();
-                        self.write_styled(&|| $dev.lock());
+                        self.write_styled($dev.lock());
                     }
                 }
             );
