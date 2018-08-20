@@ -2,7 +2,7 @@
 
 [**Documentation**](https://rust-alt.github.io/term-string/doc/term_string/)
 
-Provide a string and style types for terminal formatted output.
+Provide a string and a style type for terminal formatted output.
 
 ## Why?
 

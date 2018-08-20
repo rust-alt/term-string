@@ -9,7 +9,7 @@
     file, You can obtain one at <http://mozilla.org/MPL/2.0/>.
 */
 
-//! Provide a string and style types for terminal formatted output.
+//! Provide a string and a style type for terminal formatted output.
 //! 
 //! This crate wraps around the `term` crate. And thus, supports both
 //! Terminfo terminals, and the Windows console.
