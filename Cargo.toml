@@ -14,7 +14,7 @@ categories = ["command-line-interface"]
 travis-ci = { repository = "rust-alt/term-string" }
 
 [dependencies]
-term = { git = "https://github.com/rust-alt/term.git" }
+term = { git = "https://github.com/Stebalien/term" }
 isatty = "0.1"
 mashup = "0.1"
 
