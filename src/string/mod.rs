@@ -605,7 +605,10 @@ impl TermString {
     ///
     /// # Note
     ///
-    /// `out` doesn't have to be an actual tty.
+    /// * `out` doesn't have to be an actual tty.
+    /// * If on Windows, and getting terminfo fails, the styling info
+    ///   will be set on the current console, regardless of what `out`
+    ///   is.
     ///
     /// Check out [`print()`], [`println()`], [`eprint()`], and [`eprintln()`]
     /// below, where `out` is checked before styled output is written to it.
