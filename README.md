@@ -1,11 +1,20 @@
 # term-string [![Travis Build Status](https://api.travis-ci.org/rust-alt/term-string.svg?branch=master)](https://travis-ci.org/rust-alt/term-string) [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/rust-alt/term-string?svg=true&branch=master)](https://ci.appveyor.com/project/MoSal/term-string)
 
+[**Documentation**](https://rust-alt.github.io/term-string/doc/term_string/)
+
 Provide a string and style types for terminal formatted output.
 
 This crate wraps around the `term` crate. And thus, supports both
 Terminfo terminals, and Windows consoles.
 
 ## Examples
+
+First, add the dependency to `Cargo.toml`:
+
+``` toml
+[dependencies]
+term-string = { git = "https://github.com/rust-alt/term-string.git" }
+```
 
 ``` rust
 // color is a re-exported module from term
