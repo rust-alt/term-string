@@ -21,17 +21,15 @@
 //!
 //! // Create term styles
 //! let style1 = TermStyle::bold() + TermStyle::fg(GREEN) + TermStyle::bg(RED);
-//! let style2 = TermStyle::bold();
+//! let style2 = TermStyle::underline(true);
 //!
 //! // Create term string from a style and a string value
-//! let mut ts = TermString::new(style1, "Style");
+//! let mut ts = TermString::new(style1, "style");
 //!
-//! // Append string values with different styles.
-//!
-//! // ts += TermString::new(style1, "1");
+//! // "1" inherits style1
 //! ts+= "1";
 //!
-//! // ts += TermString::new(TermStyle::default(), " : ");
+//! // " : " is un-styled
 //! ts += TermString::from(" : ");
 //!
 //! ts += TermString::new(style2, "This is text with style 2");

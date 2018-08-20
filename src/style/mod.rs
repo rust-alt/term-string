@@ -23,7 +23,9 @@ use std::ops::{Add, AddAssign, BitOr, BitOrAssign, Sub, SubAssign};
 use self::color::Color;
 
 #[derive(Copy, Clone, Default, Debug)]
-/// TODO with ops
+/// Styling info for [`TermString`].
+///
+/// Internally, [`TermStyle`] has zero or more [`Attr`]s set.
 pub struct TermStyle {
     pub(crate) attrs: [Option<Attr>; 10],
 }

@@ -9,8 +9,6 @@
     file, You can obtain one at <http://mozilla.org/MPL/2.0/>.
 */
 
-// TODO: explore indexing and PartialEq
-
 #[cfg(test)]
 mod tests;
 #[macro_use]
@@ -41,7 +39,7 @@ enum Either<T, U> {
 #[cfg(not(windows))]
 pub trait TermWrite: Write {}
 
-// Send required by WinConsole
+// Send is required by WinConsole
 #[cfg(windows)]
 pub trait TermWrite: Write + Send {}
 
@@ -105,7 +103,10 @@ impl TermStringElement {
 }
 
 #[derive(Clone, Default, Debug)]
-/// TODO
+/// A string type with term styling info attached to it.
+///
+/// Internally, [`TermString`] contains multiple strings,
+/// each one of them has a [`TermStyle`] attached to it.
 pub struct TermString {
     elements: Vec<TermStringElement>,
 }
