@@ -566,39 +566,50 @@ impl TermString {
     /// // any formatting, so not really bold.
     /// ts.write_plain(std::io::stdout());
     /// ```
-    pub fn write_plain<W: TermWrite>(&self, mut out: W) {
+    pub fn write_plain<W: TermWrite>(&self, out: W) {
+        let _ = self.write_plain_ret_out(out);
+    }
+
+    /// Same as [`write_plain()`], but returns `out` back
+    ///
+    /// [`write_plain()`]: TermString::write_plain
+    pub fn write_plain_ret_out<W: TermWrite>(&self, mut out: W) -> W {
         for e in &self.elements {
             e.write_plain(&mut out);
         }
+        out
     }
 
     #[cfg(not(windows))]
-    fn _write_styled<W: TermWrite>(&self, out: W) {
+    fn _write_styled_ret_out<W: TermWrite>(&self, out: W) -> W {
         match Self::term_or_w(out) {
             Either::A(mut out_term) => {
                 for e in &self.elements {
                     e.write_styled(&mut out_term);
                 }
+                return out_term.into_inner();
             },
-            Either::B(mut out) => self.write_plain(&mut out),
+            Either::B(out) => self.write_plain_ret_out(out),
         }
     }
 
     #[cfg(windows)]
-    fn _write_styled<W: TermWrite>(&self, out: W) {
+    fn _write_styled_ret_out<W: TermWrite>(&self, out: W) -> W {
         match Self::term_or_w(out) {
             Either::A(mut out_term) => {
                 for e in &self.elements {
                     e.write_styled(&mut out_term);
                 }
+                return out_term.into_inner();
             },
             Either::B(out) => match Self::console_or_w(out) {
                 Either::A(mut out_term) => {
                     for e in &self.elements {
                         e.write_styled(&mut out_term);
                     }
+                    return out_term.into_inner();
                 },
-                Either::B(mut out) => self.write_plain(&mut out),
+                Either::B(mut out) => self.write_plain_ret_out(out),
             },
         }
     }
@@ -632,7 +643,14 @@ impl TermString {
     /// ts.write_styled(std::io::stdout());
     /// ```
     pub fn write_styled<W: TermWrite>(&self, out: W) {
-        self._write_styled(out)
+        let _ = self.write_styled_ret_out(out);
+    }
+
+    /// Same as [`write_styled()`], but returns `out` back
+    ///
+    /// [`write_styled()`]: TermString::write_styled
+    pub fn write_styled_ret_out<W: TermWrite>(&self, out: W) -> W {
+        self._write_styled_ret_out(out)
     }
 
     gen_print_fns!(stdout, print);
