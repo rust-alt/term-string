@@ -18,6 +18,7 @@ fn main() {
     Str::new(style2 | Sty::italic(true), " ITALIC ").println();
     Str::new(style2 | Sty::secure(), " SECURE ").println();
     Str::new(style2 | Sty::standout(true), " STANDOUT ").println();
+    Str::new(style2 | Sty::dim(), " DIM ").println();
 
     let mut test_append = Str::new(style1, "Append");
     test_append += " >> same ";
