@@ -11,7 +11,11 @@ and thus lack Windows console support (prior to Windows 10), or include
 their own wrapping code around `term`.
 
 This crate is an attempt to create a nice usable wrap around `term`
-everyone can use.
+everyone can use. It should just work with `terminfo` terminals, Windows 10
+virtual terminal support\*, and the Windows console.
+
+\* Requires a personal `term` branch, for now.
+
 
 ## Examples
 
